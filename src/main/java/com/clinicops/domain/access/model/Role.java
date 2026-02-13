@@ -13,7 +13,7 @@ public class Role {
 
     @Id
     private String id;
-    private String name;
+    private String name; // OWNER | ADMIN | DOCTOR | STAFF | OPS
     private Set<String> permissionIds;
 
     public boolean isOwner() {

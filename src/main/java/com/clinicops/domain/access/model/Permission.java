@@ -12,9 +12,9 @@ public class Permission {
     @Id
     private String id;
 
-    private String domain;
-    private String resource;
-    private String action;
+    private String domain; // CLINIC | OPS | ADMIN | ACCESS | IDENTITY
+    private String resource; // USER | ROLE | APPOINTMENT | CLINIC | ...
+    private String action; // VIEW | CREATE | UPDATE | DELETE | ASSIGN | OVERRIDE
 
     public Permission(String domain, String resource, String action) {
         this.domain = domain;

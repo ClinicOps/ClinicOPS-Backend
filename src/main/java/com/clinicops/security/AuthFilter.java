@@ -3,8 +3,11 @@ package com.clinicops.security;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+@Component
 public class AuthFilter extends OncePerRequestFilter {
 
     @Override
@@ -12,6 +15,8 @@ public class AuthFilter extends OncePerRequestFilter {
             HttpServletRequest request,
             HttpServletResponse response,
             FilterChain filterChain) throws java.io.IOException, jakarta.servlet.ServletException {
+    	
+    	System.out.println("Authfilter triggered");
 
         // Skip auth endpoints
         if (request.getRequestURI().startsWith("/auth")) {
