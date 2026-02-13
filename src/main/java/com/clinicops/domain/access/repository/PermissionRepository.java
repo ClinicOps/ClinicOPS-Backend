@@ -5,4 +5,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
 
-public interface RoleRepository extends MongoRepository<Role, String> {}
+
+public interface PermissionRepository extends MongoRepository<Permission, String> {}
+
+
