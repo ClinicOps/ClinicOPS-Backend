@@ -111,7 +111,76 @@ public class PatientServiceImpl implements PatientService {
                 .build();
     }
     
-    private String generatePatientCode(ObjectId clinicId) {
+    @Override
+    public PatientResponse update(String clinicIdStr,
+                                  String patientIdStr,
+                                  CreatePatientRequest req) {
+
+        if (!ObjectId.isValid(clinicIdStr) || !ObjectId.isValid(patientIdStr)) {
+            throw new IllegalArgumentException("Invalid id");
+        }
+
+        ObjectId clinicId = new ObjectId(clinicIdStr);
+        ObjectId patientId = new ObjectId(patientIdStr);
+
+        Patient patient = patientRepository
+                .findByClinicIdAndId(clinicId, patientId)
+                .orElseThrow(() -> new IllegalStateException("Patient not found"));
+
+        PatientContact contact = new PatientContact(
+                req.getMobile(),
+                req.getEmail(),
+                req.getAddress(),
+                req.getCity(),
+                req.getState(),
+                req.getPincode()
+        );
+
+        PatientMedical medical = new PatientMedical(
+                req.getAllergies(),
+                req.getChronicConditions(),
+                req.getNotes()
+        );
+
+        patient.updateContact(contact);
+        patient.updateMedical(medical);
+
+        Patient saved = patientRepository.save(patient);
+
+        return toResponse(saved);
+    }
+
+    @Override
+    public void archive(String clinicIdStr, String patientIdStr) {
+
+        ObjectId clinicId = new ObjectId(clinicIdStr);
+        ObjectId patientId = new ObjectId(patientIdStr);
+
+        Patient patient = patientRepository
+                .findByClinicIdAndId(clinicId, patientId)
+                .orElseThrow(() -> new IllegalStateException("Patient not found"));
+
+        patient.archive();
+
+        patientRepository.save(patient);
+    }
+
+    @Override
+    public void activate(String clinicIdStr, String patientIdStr) {
+
+        ObjectId clinicId = new ObjectId(clinicIdStr);
+        ObjectId patientId = new ObjectId(patientIdStr);
+
+        Patient patient = patientRepository
+                .findByClinicIdAndId(clinicId, patientId)
+                .orElseThrow(() -> new IllegalStateException("Patient not found"));
+
+        patient.activate();
+
+        patientRepository.save(patient);
+    }
+	
+	private String generatePatientCode(ObjectId clinicId) {
 
         Query query = new Query(Criteria.where("_id").is(clinicId));
 
