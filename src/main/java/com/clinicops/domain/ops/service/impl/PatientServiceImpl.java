@@ -12,11 +12,13 @@ import org.springframework.stereotype.Service;
 
 import com.clinicops.domain.ops.model.Gender;
 import com.clinicops.domain.ops.model.Patient;
+import com.clinicops.domain.ops.model.PatientAudit;
 import com.clinicops.domain.ops.model.PatientContact;
 import com.clinicops.domain.ops.model.PatientCounter;
 import com.clinicops.domain.ops.model.PatientMedical;
 import com.clinicops.domain.ops.model.PatientPersonal;
 import com.clinicops.domain.ops.model.PatientStatus;
+import com.clinicops.domain.ops.repository.PatientAuditRepository;
 import com.clinicops.domain.ops.repository.PatientRepository;
 import com.clinicops.domain.ops.service.PatientService;
 import com.clinicops.web.ops.dto.CreatePatientRequest;
@@ -30,6 +32,18 @@ public class PatientServiceImpl implements PatientService {
 
     private final PatientRepository patientRepository;
     private final MongoTemplate mongoTemplate;
+    private final PatientAuditRepository patientAuditRepository;
+    
+    @Override
+    public Page<PatientResponse> list(String clinicIdStr, Pageable pageable) {
+
+        ObjectId clinicId = new ObjectId(clinicIdStr);
+
+        Page<PatientResponse> res = patientRepository
+                .findByClinicIdAndStatusNot(clinicId, PatientStatus.ARCHIVED, pageable)
+                .map(this::toResponse);
+        return res;
+    }
 
     @Override
     public PatientResponse create(String clinicIdStr, CreatePatientRequest req) {
@@ -78,37 +92,11 @@ public class PatientServiceImpl implements PatientService {
                 medical
         );
 
-        System.out.println("Creating patient for clinic: " + clinicId);
-        try {
             Patient saved = patientRepository.save(patient);
+            audit(saved, "CREATE", "Patient created");
+            
             return toResponse(saved);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
-        }
-    }
 
-    @Override
-    public Page<PatientResponse> list(String clinicIdStr, Pageable pageable) {
-
-        ObjectId clinicId = new ObjectId(clinicIdStr);
-
-        Page<PatientResponse> res = patientRepository
-                .findByClinicIdAndStatusNot(clinicId, PatientStatus.ARCHIVED, pageable)
-                .map(this::toResponse);
-        return res;
-    }
-
-    private PatientResponse toResponse(Patient p) {
-        return PatientResponse.builder()
-                .id(p.getId().toHexString())
-                .patientCode(p.getPatientCode())
-                .firstName(p.getPersonal().getFirstName())
-                .lastName(p.getPersonal().getLastName())
-                .mobile(p.getContact().getMobile())
-                .email(p.getContact().getEmail())
-                .status(p.getStatus().name())
-                .build();
     }
     
     @Override
@@ -146,6 +134,7 @@ public class PatientServiceImpl implements PatientService {
         patient.updateMedical(medical);
 
         Patient saved = patientRepository.save(patient);
+        audit(saved, "UPDATE", "Updated contact and medical");
 
         return toResponse(saved);
     }
@@ -163,6 +152,7 @@ public class PatientServiceImpl implements PatientService {
         patient.archive();
 
         patientRepository.save(patient);
+        audit(patient, "ARCHIVE", "Patient archived");
     }
 
     @Override
@@ -178,6 +168,19 @@ public class PatientServiceImpl implements PatientService {
         patient.activate();
 
         patientRepository.save(patient);
+        audit(patient, "ACTIVATE", "Patient activated");
+    }
+    
+    private PatientResponse toResponse(Patient p) {
+        return PatientResponse.builder()
+                .id(p.getId().toHexString())
+                .patientCode(p.getPatientCode())
+                .firstName(p.getPersonal().getFirstName())
+                .lastName(p.getPersonal().getLastName())
+                .mobile(p.getContact().getMobile())
+                .email(p.getContact().getEmail())
+                .status(p.getStatus().name())
+                .build();
     }
 	
 	private String generatePatientCode(ObjectId clinicId) {
@@ -201,5 +204,29 @@ public class PatientServiceImpl implements PatientService {
 
         return String.format("PT-%06d", seq);
     }
+	
+	private void audit(Patient patient, String action, String summary) {
+
+	    var auth = org.springframework.security.core.context.SecurityContextHolder
+	            .getContext()
+	            .getAuthentication();
+
+	    ObjectId performedBy = null;
+
+	    if (auth != null && ObjectId.isValid(auth.getName())) {
+	        performedBy = new ObjectId(auth.getName());
+	    }
+
+	    PatientAudit audit = new PatientAudit(
+	            patient.getId(),
+	            patient.getClinicId(),
+	            action,
+	            performedBy,
+	            summary
+	    );
+
+	    patientAuditRepository.save(audit);
+	}
+
 
 }
