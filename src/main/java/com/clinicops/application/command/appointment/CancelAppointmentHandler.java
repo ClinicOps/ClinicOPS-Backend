@@ -26,7 +26,7 @@ public class CancelAppointmentHandler
 
         Appointment appt = service.get(command.appointmentId);
 
-        if (!appt.getClinicId().equals(clinicId)) {
+        if (!appt.getClinicId().toString().equals(clinicId)) {
             throw new RuntimeException("Cross-clinic access denied");
         }
 

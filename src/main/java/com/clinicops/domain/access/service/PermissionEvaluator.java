@@ -5,6 +5,8 @@ import com.clinicops.domain.access.model.UserRoleAssignment;
 import com.clinicops.domain.access.repository.PermissionRepository;
 import com.clinicops.domain.access.repository.RoleRepository;
 import com.clinicops.domain.access.repository.UserRoleAssignmentRepository;
+
+import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -32,10 +34,13 @@ public class PermissionEvaluator {
             String domain,
             String resource,
             String action) {
+    	
+    	ObjectId userObjId = new ObjectId(userId);
+    	ObjectId clinicObjId = new ObjectId(clinicId);
 
         var assignments =
                 assignmentRepo.findByUserIdAndClinicIdAndStatus(
-                        userId, clinicId, "ACTIVE");
+                		userObjId, clinicObjId, "ACTIVE");
 
         Set<String> permissionKeys = new HashSet<>();
 

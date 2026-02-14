@@ -2,6 +2,8 @@ package com.clinicops.domain.ops.service;
 
 import com.clinicops.domain.ops.model.Appointment;
 import com.clinicops.domain.ops.repository.AppointmentRepository;
+
+import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -20,9 +22,11 @@ public class AppointmentService {
             String clinicId,
             String patientName,
             Instant scheduledAt) {
+    	
+    	ObjectId clinicObjId = new ObjectId(clinicId);
 
         Appointment appointment =
-                new Appointment(clinicId, patientName, scheduledAt);
+                new Appointment(clinicObjId, patientName, scheduledAt);
 
         return repository.save(appointment);
     }
@@ -41,11 +45,12 @@ public class AppointmentService {
     }
 
     public List<Appointment> list(String clinicId) {
-        return repository.findByClinicId(clinicId);
+        return repository.findByClinicId(new ObjectId(clinicId));
     }
 
     public Appointment get(String id) {
-        return repository.findById(id)
+    	ObjectId objId = new ObjectId(id);
+        return repository.findById(objId)
                 .orElseThrow(() -> new RuntimeException("Appointment not found"));
     }
 }

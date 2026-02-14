@@ -1,5 +1,6 @@
 package com.clinicops.domain.access.model;
 
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -10,10 +11,10 @@ import lombok.Data;
 public class UserRoleAssignment {
 
     @Id
-    private String id;
+    private ObjectId id;
 
-    private String userId;
-    private String clinicId;
+    private ObjectId userId;
+    private ObjectId clinicId;
     private String roleId;
     private String status; // ACTIVE / SUSPENDED
 }

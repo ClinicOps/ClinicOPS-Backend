@@ -1,7 +1,10 @@
 package com.clinicops.domain.ops.model;
 
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import com.clinicops.common.model.BaseEntity;
 
 import lombok.Data;
 
@@ -9,19 +12,19 @@ import java.time.Instant;
 
 @Document("appointments")
 @Data
-public class Appointment {
+public class Appointment{
 
     @Id
-    private String id;
+    private ObjectId id;
 
-    private String clinicId;
+    private ObjectId clinicId;
     private String patientName;
     private Instant scheduledAt;
     private String status; // CREATED, CONFIRMED, CANCELLED
 
     protected Appointment() {}
 
-    public Appointment(String clinicId, String patientName, Instant scheduledAt) {
+    public Appointment(ObjectId clinicId, String patientName, Instant scheduledAt) {
         this.clinicId = clinicId;
         this.patientName = patientName;
         this.scheduledAt = scheduledAt;
@@ -36,11 +39,11 @@ public class Appointment {
         this.status = "CANCELLED";
     }
 
-    public String getClinicId() {
+    public ObjectId getClinicId() {
         return clinicId;
     }
 
-    public String getId() {
+    public ObjectId getId() {
         return id;
     }
 }

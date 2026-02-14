@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -69,12 +70,15 @@ public class MeController {
                 (String) request.getAttribute("CLINIC_ID");
         System.out.println("RBAC check userId=" + user.getUserId()
         + " clinicId=" + clinicId);
+        
+        ObjectId userObjId = new ObjectId(user.getUserId());
+        ObjectId clinicObjId = new ObjectId(clinicId);
 
         // Fetch ACTIVE role assignments
         var assignments =
                 assignmentRepository.findByUserIdAndClinicIdAndStatus(
-                        user.getUserId(),
-                        clinicId,
+                		userObjId,
+                        clinicObjId,
                         "ACTIVE"
                 );
 
