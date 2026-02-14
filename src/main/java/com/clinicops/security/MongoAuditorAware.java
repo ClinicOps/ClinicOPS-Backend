@@ -12,15 +12,24 @@ public class MongoAuditorAware implements AuditorAware<ObjectId> {
 
     @Override
     public Optional<ObjectId> getCurrentAuditor() {
-        // extract userId from security context
-        String userId = SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getName();
 
-        if (userId == null) {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null) {
+            return Optional.empty();
+        }
+
+        System.out.println("AUDITOR PRINCIPAL: " + auth.getName());
+
+//        String userId = auth.getName();
+        String userId = "6990202116a40af61054fdbc";
+
+        if (!ObjectId.isValid(userId)) {
+            System.out.println("INVALID OBJECT ID FOR AUDITOR");
             return Optional.empty();
         }
 
         return Optional.of(new ObjectId(userId));
     }
 }
+

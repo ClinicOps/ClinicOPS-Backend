@@ -1,49 +1,75 @@
 package com.clinicops.domain.ops.model;
 
+import java.time.Instant;
+
 import org.bson.types.ObjectId;
-import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.clinicops.common.model.BaseEntity;
 
-import lombok.Data;
+import lombok.Getter;
 
-import java.time.Instant;
-
+@Getter
 @Document("appointments")
-@Data
-public class Appointment{
-
-    @Id
-    private ObjectId id;
+@CompoundIndexes({
+    @CompoundIndex(name = "clinic_scheduled_idx", def = "{'clinicId': 1, 'scheduledAt': 1}"),
+    @CompoundIndex(name = "clinic_status_idx", def = "{'clinicId': 1, 'status': 1}")
+})
+public class Appointment extends BaseEntity {
 
     private ObjectId clinicId;
     private String patientName;
     private Instant scheduledAt;
-    private String status; // CREATED, CONFIRMED, CANCELLED
+    private AppointmentStatus status;
 
-    protected Appointment() {}
+    protected Appointment() {
+        // For Mongo
+    }
 
     public Appointment(ObjectId clinicId, String patientName, Instant scheduledAt) {
+        if (clinicId == null) {
+            throw new IllegalArgumentException("ClinicId cannot be null");
+        }
+        if (patientName == null || patientName.trim().length() < 2) {
+            throw new IllegalArgumentException("Invalid patient name");
+        }
+        if (scheduledAt == null) {
+            throw new IllegalArgumentException("Scheduled time required");
+        }
+
         this.clinicId = clinicId;
-        this.patientName = patientName;
+        this.patientName = patientName.trim();
         this.scheduledAt = scheduledAt;
-        this.status = "CREATED";
+        this.status = AppointmentStatus.CREATED;
+    }
+
+    public void confirm() {
+        if (this.status == AppointmentStatus.CANCELLED) {
+            throw new IllegalStateException("Cannot confirm a cancelled appointment");
+        }
+        this.status = AppointmentStatus.CONFIRMED;
     }
 
     public void reschedule(Instant newTime) {
+        if (this.status == AppointmentStatus.CANCELLED) {
+            throw new IllegalStateException("Cannot reschedule a cancelled appointment");
+        }
+        if (newTime == null) {
+            throw new IllegalArgumentException("New time required");
+        }
         this.scheduledAt = newTime;
     }
 
     public void cancel() {
-        this.status = "CANCELLED";
+        if (this.status == AppointmentStatus.CANCELLED) {
+            return; // idempotent
+        }
+        this.status = AppointmentStatus.CANCELLED;
     }
 
-    public ObjectId getClinicId() {
-        return clinicId;
-    }
-
-    public ObjectId getId() {
-        return id;
+    public boolean isActive() {
+        return this.status != AppointmentStatus.CANCELLED;
     }
 }
