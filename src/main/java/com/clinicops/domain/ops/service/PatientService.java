@@ -11,6 +11,8 @@ public interface PatientService {
 
     Page<PatientResponse> list(String clinicId, Pageable pageable);
     
+    PatientResponse getById(String clinicId, String patientId);
+    
     PatientResponse update(String clinicId, String patientId, CreatePatientRequest request);
 
     void archive(String clinicId, String patientId);

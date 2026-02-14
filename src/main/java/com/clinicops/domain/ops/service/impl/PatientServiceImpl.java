@@ -100,17 +100,36 @@ public class PatientServiceImpl implements PatientService {
 
             Patient saved = patientRepository.save(patient);
             audit(saved, "CREATE", "Patient created");
-            eventPublisher.publish(
-            	    new PatientCreatedEvent(
-            	        saved.getId().toHexString(),
-            	        saved.getClinicId().toHexString(),
-            	        saved.getPatientCode()
-            	    )
-            	);
+            // Need to fix rabbitmq error
+//            eventPublisher.publish(
+//            	    new PatientCreatedEvent(
+//            	        saved.getId().toHexString(),
+//            	        saved.getClinicId().toHexString(),
+//            	        saved.getPatientCode()
+//            	    )
+//            	);
             
             return toResponse(saved);
 
     }
+    
+    @Override
+    public PatientResponse getById(String clinicIdStr, String patientIdStr) {
+
+        if (!ObjectId.isValid(clinicIdStr) || !ObjectId.isValid(patientIdStr)) {
+            throw new IllegalArgumentException("Invalid id");
+        }
+
+        ObjectId clinicId = new ObjectId(clinicIdStr);
+        ObjectId patientId = new ObjectId(patientIdStr);
+
+        Patient patient = patientRepository
+                .findByClinicIdAndId(clinicId, patientId)
+                .orElseThrow(() -> new IllegalStateException("Patient not found"));
+
+        return toResponse(patient);
+    }
+
     
     @Override
     public PatientResponse update(String clinicIdStr,
@@ -148,12 +167,12 @@ public class PatientServiceImpl implements PatientService {
 
         Patient saved = patientRepository.save(patient);
         audit(saved, "UPDATE", "Updated contact and medical");
-        eventPublisher.publish(
-        	    new PatientUpdatedEvent(
-        	        saved.getId().toHexString(),
-        	        saved.getClinicId().toHexString()
-        	    )
-        	);
+//        eventPublisher.publish(
+//        	    new PatientUpdatedEvent(
+//        	        saved.getId().toHexString(),
+//        	        saved.getClinicId().toHexString()
+//        	    )
+//        	);
 
         return toResponse(saved);
     }
@@ -172,12 +191,12 @@ public class PatientServiceImpl implements PatientService {
 
         patientRepository.save(patient);
         audit(patient, "ARCHIVE", "Patient archived");
-        eventPublisher.publish(
-        	    new PatientArchivedEvent(
-        	        patient.getId().toHexString(),
-        	        patient.getClinicId().toHexString()
-        	    )
-        	);
+//        eventPublisher.publish(
+//        	    new PatientArchivedEvent(
+//        	        patient.getId().toHexString(),
+//        	        patient.getClinicId().toHexString()
+//        	    )
+//        	);
     }
 
     @Override
@@ -194,12 +213,12 @@ public class PatientServiceImpl implements PatientService {
 
         patientRepository.save(patient);
         audit(patient, "ACTIVATE", "Patient activated");
-        eventPublisher.publish(
-        	    new PatientActivatedEvent(
-        	        patient.getId().toHexString(),
-        	        patient.getClinicId().toHexString()
-        	    )
-        	);
+//        eventPublisher.publish(
+//        	    new PatientActivatedEvent(
+//        	        patient.getId().toHexString(),
+//        	        patient.getClinicId().toHexString()
+//        	    )
+//        	);
     }
     
     private PatientResponse toResponse(Patient p) {
@@ -210,6 +229,7 @@ public class PatientServiceImpl implements PatientService {
                 .lastName(p.getPersonal().getLastName())
                 .mobile(p.getContact().getMobile())
                 .email(p.getContact().getEmail())
+                .gender(p.getPersonal().getGender().toString())
                 .status(p.getStatus().name())
                 .build();
     }

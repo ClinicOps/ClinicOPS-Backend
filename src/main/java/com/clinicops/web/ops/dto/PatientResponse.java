@@ -15,6 +15,8 @@ public class PatientResponse {
 
     String mobile;
     String email;
+    
+    String gender;
 
     String status;
 }

@@ -24,6 +24,13 @@ public class PatientController {
 	public Page<PatientResponse> list(@PathVariable String clinicId, Pageable pageable) {
 		return patientService.list(clinicId, pageable);
 	}
+	
+	@GetMapping("/{patientId}")
+	public PatientResponse getById(@PathVariable String clinicId,
+	                               @PathVariable String patientId) {
+	    return patientService.getById(clinicId, patientId);
+	}
+
 
 	@PutMapping("/{patientId}")
 	public PatientResponse update(@PathVariable String clinicId, @PathVariable String patientId,
