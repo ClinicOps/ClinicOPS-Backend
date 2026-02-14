@@ -21,6 +21,11 @@ import com.clinicops.domain.ops.model.PatientStatus;
 import com.clinicops.domain.ops.repository.PatientAuditRepository;
 import com.clinicops.domain.ops.repository.PatientRepository;
 import com.clinicops.domain.ops.service.PatientService;
+import com.clinicops.infra.messaging.EventPublisher;
+import com.clinicops.infra.messaging.events.PatientActivatedEvent;
+import com.clinicops.infra.messaging.events.PatientArchivedEvent;
+import com.clinicops.infra.messaging.events.PatientCreatedEvent;
+import com.clinicops.infra.messaging.events.PatientUpdatedEvent;
 import com.clinicops.web.ops.dto.CreatePatientRequest;
 import com.clinicops.web.ops.dto.PatientResponse;
 
@@ -33,6 +38,7 @@ public class PatientServiceImpl implements PatientService {
     private final PatientRepository patientRepository;
     private final MongoTemplate mongoTemplate;
     private final PatientAuditRepository patientAuditRepository;
+    private final EventPublisher eventPublisher;
     
     @Override
     public Page<PatientResponse> list(String clinicIdStr, Pageable pageable) {
@@ -94,6 +100,13 @@ public class PatientServiceImpl implements PatientService {
 
             Patient saved = patientRepository.save(patient);
             audit(saved, "CREATE", "Patient created");
+            eventPublisher.publish(
+            	    new PatientCreatedEvent(
+            	        saved.getId().toHexString(),
+            	        saved.getClinicId().toHexString(),
+            	        saved.getPatientCode()
+            	    )
+            	);
             
             return toResponse(saved);
 
@@ -135,6 +148,12 @@ public class PatientServiceImpl implements PatientService {
 
         Patient saved = patientRepository.save(patient);
         audit(saved, "UPDATE", "Updated contact and medical");
+        eventPublisher.publish(
+        	    new PatientUpdatedEvent(
+        	        saved.getId().toHexString(),
+        	        saved.getClinicId().toHexString()
+        	    )
+        	);
 
         return toResponse(saved);
     }
@@ -153,6 +172,12 @@ public class PatientServiceImpl implements PatientService {
 
         patientRepository.save(patient);
         audit(patient, "ARCHIVE", "Patient archived");
+        eventPublisher.publish(
+        	    new PatientArchivedEvent(
+        	        patient.getId().toHexString(),
+        	        patient.getClinicId().toHexString()
+        	    )
+        	);
     }
 
     @Override
@@ -169,6 +194,12 @@ public class PatientServiceImpl implements PatientService {
 
         patientRepository.save(patient);
         audit(patient, "ACTIVATE", "Patient activated");
+        eventPublisher.publish(
+        	    new PatientActivatedEvent(
+        	        patient.getId().toHexString(),
+        	        patient.getClinicId().toHexString()
+        	    )
+        	);
     }
     
     private PatientResponse toResponse(Patient p) {
