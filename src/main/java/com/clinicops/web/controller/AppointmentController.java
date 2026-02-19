@@ -2,6 +2,7 @@ package com.clinicops.web.controller;
 
 import com.clinicops.application.command.CommandGateway;
 import com.clinicops.application.command.appointment.*;
+import com.clinicops.domain.ops.dto.CreateAppointmentRequest;
 import com.clinicops.domain.ops.service.AppointmentService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
@@ -32,19 +33,19 @@ public class AppointmentController {
 
     @PostMapping
     public void create(
-            @RequestBody Map<String, String> body,
+    		@RequestBody CreateAppointmentRequest req,
             HttpServletRequest request) {
 
-        CreateAppointmentCommand cmd =
-                new CreateAppointmentCommand(
-                        body.get("patientName"),
-                        Instant.parse(body.get("scheduledAt"))
-                );
+    	 CreateAppointmentCommand cmd =
+    		        new CreateAppointmentCommand(
+    		            req.patientId(),
+    		            req.scheduledAt()
+    		        );
 
-        gateway.execute(cmd, request, c ->
-                createHandler.handle(cmd,
-                        (String) request.getAttribute("CLINIC_ID")));
-    }
+    		    gateway.execute(cmd, request, c ->
+    		        createHandler.handle(cmd,
+    		            (String) request.getAttribute("CLINIC_ID")));
+    		}
 
     @DeleteMapping("/{id}")
     public void cancel(

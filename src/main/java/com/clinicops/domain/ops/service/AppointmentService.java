@@ -1,7 +1,9 @@
 package com.clinicops.domain.ops.service;
 
 import com.clinicops.domain.ops.model.Appointment;
+import com.clinicops.domain.ops.model.Patient;
 import com.clinicops.domain.ops.repository.AppointmentRepository;
+import com.clinicops.domain.ops.repository.PatientRepository;
 
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
@@ -13,23 +15,50 @@ import java.util.List;
 public class AppointmentService {
 
     private final AppointmentRepository repository;
+    private final PatientRepository patientRepository;
 
-    public AppointmentService(AppointmentRepository repository) {
+    public AppointmentService(AppointmentRepository repository, PatientRepository patientRepository) {
         this.repository = repository;
+        this.patientRepository = patientRepository;
     }
 
     public Appointment create(
-            String clinicId,
-            String patientName,
+            String clinicIdStr,
+            String patientIdStr,
             Instant scheduledAt) {
-    	
-    	ObjectId clinicObjId = new ObjectId(clinicId);
 
-        Appointment appointment =
-                new Appointment(clinicObjId, patientName, scheduledAt);
+        if (!ObjectId.isValid(clinicIdStr) ||
+            !ObjectId.isValid(patientIdStr)) {
+            throw new IllegalArgumentException("Invalid ID");
+        }
+
+        ObjectId clinicId = new ObjectId(clinicIdStr);
+        ObjectId patientId = new ObjectId(patientIdStr);
+
+        Patient patient = patientRepository
+                .findByClinicIdAndId(clinicId, patientId)
+                .orElseThrow(() ->
+                    new IllegalStateException("Patient not found"));
+
+        if (!"ACTIVE".equals(patient.getStatus())) {
+            throw new IllegalStateException(
+                "Cannot create appointment for archived patient");
+        }
+
+        String snapshotName =
+                patient.getPersonal().getFirstName() + " " +
+                patient.getPersonal().getLastName();
+
+        Appointment appointment = new Appointment(
+                clinicId,
+                patientId,
+                snapshotName,
+                scheduledAt
+        );
 
         return repository.save(appointment);
     }
+
 
     public void reschedule(
             Appointment appointment,

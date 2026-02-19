@@ -20,7 +20,9 @@ import lombok.Getter;
 public class Appointment extends BaseEntity {
 
     private ObjectId clinicId;
-    private String patientName;
+    private ObjectId patientId;
+ // snapshot for historical accuracy
+    private String patientNameSnapshot;
     private Instant scheduledAt;
     private AppointmentStatus status;
 
@@ -28,19 +30,18 @@ public class Appointment extends BaseEntity {
         // For Mongo
     }
 
-    public Appointment(ObjectId clinicId, String patientName, Instant scheduledAt) {
+    public Appointment(ObjectId clinicId, ObjectId patientId,
+            String patientNameSnapshot, Instant scheduledAt) {
         if (clinicId == null) {
             throw new IllegalArgumentException("ClinicId cannot be null");
-        }
-        if (patientName == null || patientName.trim().length() < 2) {
-            throw new IllegalArgumentException("Invalid patient name");
         }
         if (scheduledAt == null) {
             throw new IllegalArgumentException("Scheduled time required");
         }
 
         this.clinicId = clinicId;
-        this.patientName = patientName.trim();
+        this.patientId = patientId;
+        this.patientNameSnapshot = patientNameSnapshot;
         this.scheduledAt = scheduledAt;
         this.status = AppointmentStatus.CREATED;
     }

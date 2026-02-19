@@ -25,10 +25,10 @@ public class CreateAppointmentHandler
             CreateAppointmentCommand command,
             String clinicId) {
 
-        service.create(
-                clinicId,
-                command.patientName,
-                command.scheduledAt
-        );
+    	service.create(
+    	        clinicId,
+    	        command.patientId,
+    	        command.scheduledAt
+    	);
     }
 }
