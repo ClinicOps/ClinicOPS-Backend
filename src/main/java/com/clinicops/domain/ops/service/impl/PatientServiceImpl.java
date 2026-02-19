@@ -1,8 +1,11 @@
 package com.clinicops.domain.ops.service.impl;
 
+import java.util.List;
+
 import org.bson.types.ObjectId;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -17,15 +20,10 @@ import com.clinicops.domain.ops.model.PatientContact;
 import com.clinicops.domain.ops.model.PatientCounter;
 import com.clinicops.domain.ops.model.PatientMedical;
 import com.clinicops.domain.ops.model.PatientPersonal;
-import com.clinicops.domain.ops.model.PatientStatus;
 import com.clinicops.domain.ops.repository.PatientAuditRepository;
 import com.clinicops.domain.ops.repository.PatientRepository;
 import com.clinicops.domain.ops.service.PatientService;
 import com.clinicops.infra.messaging.EventPublisher;
-import com.clinicops.infra.messaging.events.PatientActivatedEvent;
-import com.clinicops.infra.messaging.events.PatientArchivedEvent;
-import com.clinicops.infra.messaging.events.PatientCreatedEvent;
-import com.clinicops.infra.messaging.events.PatientUpdatedEvent;
 import com.clinicops.web.ops.dto.CreatePatientRequest;
 import com.clinicops.web.ops.dto.PatientResponse;
 
@@ -41,15 +39,41 @@ public class PatientServiceImpl implements PatientService {
     private final EventPublisher eventPublisher;
     
     @Override
-    public Page<PatientResponse> list(String clinicIdStr, Pageable pageable) {
+    public Page<PatientResponse> list(String clinicIdStr,
+            int page,
+            int size,
+            String query,
+            String status) {
 
-        ObjectId clinicId = new ObjectId(clinicIdStr);
+    	 ObjectId clinicId = new ObjectId(clinicIdStr);
 
-        Page<PatientResponse> res = patientRepository
-                .findByClinicIdAndStatusNot(clinicId, PatientStatus.ARCHIVED, pageable)
-                .map(this::toResponse);
-        return res;
-    }
+    	    Query mongoQuery = new Query();
+    	    mongoQuery.addCriteria(Criteria.where("clinicId").is(clinicId));
+
+    	    if (status != null && !status.equalsIgnoreCase("ALL")) {
+    	        mongoQuery.addCriteria(Criteria.where("status").is(status));
+    	    }
+
+    	    if (query != null && !query.isBlank()) {
+    	        mongoQuery.addCriteria(new Criteria().orOperator(
+    	                Criteria.where("personal.firstName").regex(query, "i"),
+    	                Criteria.where("personal.lastName").regex(query, "i"),
+    	                Criteria.where("contact.mobile").regex(query, "i")
+    	        ));
+    	    }
+
+    	    long total = mongoTemplate.count(mongoQuery, Patient.class);
+
+    	    mongoQuery.with(PageRequest.of(page, size));
+
+    	    List<Patient> patients =
+    	            mongoTemplate.find(mongoQuery, Patient.class);
+
+    	    List<PatientResponse> responses =
+    	            patients.stream().map(this::toResponse).toList();
+
+    	    return new PageImpl<>(responses, PageRequest.of(page, size), total);
+    	}
 
     @Override
     public PatientResponse create(String clinicIdStr, CreatePatientRequest req) {

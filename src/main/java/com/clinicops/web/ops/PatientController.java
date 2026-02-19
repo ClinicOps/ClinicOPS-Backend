@@ -21,8 +21,12 @@ public class PatientController {
 	}
 
 	@GetMapping
-	public Page<PatientResponse> list(@PathVariable String clinicId, Pageable pageable) {
-		return patientService.list(clinicId, pageable);
+	public Page<PatientResponse> list(@PathVariable String clinicId, 
+			@RequestParam(defaultValue = "0") int page,
+	        @RequestParam(defaultValue = "10") int size,
+	        @RequestParam(required = false) String query,
+	        @RequestParam(required = false) String status) {
+		return patientService.list(clinicId, page, size, query, status);
 	}
 	
 	@GetMapping("/{patientId}")

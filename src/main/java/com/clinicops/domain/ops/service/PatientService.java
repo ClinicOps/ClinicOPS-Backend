@@ -9,7 +9,7 @@ public interface PatientService {
 
     PatientResponse create(String clinicId, CreatePatientRequest request);
 
-    Page<PatientResponse> list(String clinicId, Pageable pageable);
+    Page<PatientResponse> list(String clinicId, int page, int size, String query, String status);
     
     PatientResponse getById(String clinicId, String patientId);
     
@@ -18,5 +18,6 @@ public interface PatientService {
     void archive(String clinicId, String patientId);
 
     void activate(String clinicId, String patientId);
+
 
 }
