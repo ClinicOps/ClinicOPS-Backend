@@ -1,9 +1,10 @@
-package com.clinicops.domain.ops.service;
+package com.clinicops.ops.patient.service;
 
-import com.clinicops.web.ops.dto.CreatePatientRequest;
-import com.clinicops.web.ops.dto.PatientResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import com.clinicops.ops.patient.dto.CreatePatientRequest;
+import com.clinicops.ops.patient.dto.PatientResponse;
 
 public interface PatientService {
 

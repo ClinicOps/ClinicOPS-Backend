@@ -1,8 +1,9 @@
-package com.clinicops.web.ops;
+package com.clinicops.ops.patient.controller;
 
-import com.clinicops.domain.ops.service.PatientService;
-import com.clinicops.web.ops.dto.CreatePatientRequest;
-import com.clinicops.web.ops.dto.PatientResponse;
+import com.clinicops.ops.patient.dto.CreatePatientRequest;
+import com.clinicops.ops.patient.dto.PatientResponse;
+import com.clinicops.ops.patient.service.PatientService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

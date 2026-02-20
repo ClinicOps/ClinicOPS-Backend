@@ -1,4 +1,4 @@
-package com.clinicops.web.controller;
+  package com.clinicops.domain.access.controller;
 
 import java.util.ArrayList;
 import java.util.HashMap;

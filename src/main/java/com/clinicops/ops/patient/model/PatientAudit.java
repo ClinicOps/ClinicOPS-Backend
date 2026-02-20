@@ -1,4 +1,4 @@
-package com.clinicops.domain.ops.model;
+package com.clinicops.ops.patient.model;
 
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;

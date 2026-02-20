@@ -1,4 +1,4 @@
-package com.clinicops.domain.ops.service.impl;
+package com.clinicops.ops.patient.service;
 
 import java.util.List;
 
@@ -13,19 +13,18 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
-import com.clinicops.domain.ops.model.Gender;
-import com.clinicops.domain.ops.model.Patient;
-import com.clinicops.domain.ops.model.PatientAudit;
-import com.clinicops.domain.ops.model.PatientContact;
-import com.clinicops.domain.ops.model.PatientCounter;
-import com.clinicops.domain.ops.model.PatientMedical;
-import com.clinicops.domain.ops.model.PatientPersonal;
-import com.clinicops.domain.ops.repository.PatientAuditRepository;
-import com.clinicops.domain.ops.repository.PatientRepository;
-import com.clinicops.domain.ops.service.PatientService;
 import com.clinicops.infra.messaging.EventPublisher;
-import com.clinicops.web.ops.dto.CreatePatientRequest;
-import com.clinicops.web.ops.dto.PatientResponse;
+import com.clinicops.ops.patient.counter.PatientCounter;
+import com.clinicops.ops.patient.dto.CreatePatientRequest;
+import com.clinicops.ops.patient.dto.PatientResponse;
+import com.clinicops.ops.patient.model.Gender;
+import com.clinicops.ops.patient.model.Patient;
+import com.clinicops.ops.patient.model.PatientAudit;
+import com.clinicops.ops.patient.model.PatientContact;
+import com.clinicops.ops.patient.model.PatientMedical;
+import com.clinicops.ops.patient.model.PatientPersonal;
+import com.clinicops.ops.patient.repository.PatientAuditRepository;
+import com.clinicops.ops.patient.repository.PatientRepository;
 
 import lombok.RequiredArgsConstructor;
 

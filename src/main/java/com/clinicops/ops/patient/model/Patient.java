@@ -1,4 +1,4 @@
-package com.clinicops.domain.ops.model;
+package com.clinicops.ops.patient.model;
 
 import com.clinicops.common.model.BaseEntity;
 import lombok.Getter;

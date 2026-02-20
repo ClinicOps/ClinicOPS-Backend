@@ -1,8 +1,9 @@
-package com.clinicops.domain.ops.repository;
+package com.clinicops.ops.patient.repository;
 
-import com.clinicops.domain.ops.model.PatientCounter;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
+
+import com.clinicops.ops.patient.counter.PatientCounter;
 
 public interface PatientCounterRepository extends MongoRepository<PatientCounter, ObjectId> {
 }

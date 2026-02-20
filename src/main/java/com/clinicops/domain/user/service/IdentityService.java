@@ -1,4 +1,4 @@
-package com.clinicops.domain.identity.service;
+package com.clinicops.domain.user.service;
 
 public class IdentityService {
 

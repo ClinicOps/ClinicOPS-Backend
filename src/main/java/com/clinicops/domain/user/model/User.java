@@ -1,4 +1,4 @@
-package com.clinicops.domain.identity.model;
+package com.clinicops.domain.user.model;
 
 public class User {
 

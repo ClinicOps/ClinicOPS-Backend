@@ -1,4 +1,4 @@
-package com.clinicops.infra.messaging.events;
+package com.clinicops.ops.patient.event;
 
 import com.clinicops.infra.messaging.BaseEvent;
 import lombok.Getter;

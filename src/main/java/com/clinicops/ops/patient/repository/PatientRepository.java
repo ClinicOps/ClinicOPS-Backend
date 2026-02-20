@@ -1,11 +1,12 @@
-package com.clinicops.domain.ops.repository;
+package com.clinicops.ops.patient.repository;
 
-import com.clinicops.domain.ops.model.Patient;
-import com.clinicops.domain.ops.model.PatientStatus;
 import org.bson.types.ObjectId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
+
+import com.clinicops.ops.patient.model.Patient;
+import com.clinicops.ops.patient.model.PatientStatus;
 
 import java.util.Optional;
 

@@ -1,4 +1,4 @@
-package com.clinicops.web.ops.dto;
+package com.clinicops.ops.patient.dto;
 
 import lombok.Data;
 

@@ -1,9 +1,9 @@
 package com.clinicops.ops.appointment.service;
 
-import com.clinicops.domain.ops.model.Patient;
-import com.clinicops.domain.ops.repository.PatientRepository;
 import com.clinicops.ops.appointment.model.Appointment;
 import com.clinicops.ops.appointment.repository.AppointmentRepository;
+import com.clinicops.ops.patient.model.Patient;
+import com.clinicops.ops.patient.repository.PatientRepository;
 
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;

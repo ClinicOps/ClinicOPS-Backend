@@ -1,4 +1,4 @@
-package com.clinicops.domain.identity.repository;
+package com.clinicops.domain.user.repository;
 
 public class UserRepository {
 

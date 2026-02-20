@@ -1,4 +1,4 @@
-package com.clinicops.web.controller;
+package com.clinicops.domain.access.controller;
 
 public class AuthController {
 
