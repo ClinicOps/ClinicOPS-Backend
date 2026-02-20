@@ -1,9 +1,13 @@
-package com.clinicops.web.controller;
+package com.clinicops.ops.appointment.controller;
 
 import com.clinicops.application.command.CommandGateway;
-import com.clinicops.application.command.appointment.*;
-import com.clinicops.domain.ops.dto.CreateAppointmentRequest;
-import com.clinicops.domain.ops.service.AppointmentService;
+import com.clinicops.ops.appointment.command.CancelAppointmentCommand;
+import com.clinicops.ops.appointment.command.CancelAppointmentHandler;
+import com.clinicops.ops.appointment.command.CreateAppointmentCommand;
+import com.clinicops.ops.appointment.command.CreateAppointmentHandler;
+import com.clinicops.ops.appointment.dto.CreateAppointmentRequest;
+import com.clinicops.ops.appointment.service.AppointmentService;
+
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
 

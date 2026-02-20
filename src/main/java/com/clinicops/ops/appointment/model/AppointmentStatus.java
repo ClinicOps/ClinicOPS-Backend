@@ -1,4 +1,4 @@
-package com.clinicops.domain.ops.model;
+package com.clinicops.ops.appointment.model;
 
 public enum AppointmentStatus {
     CREATED,

@@ -1,4 +1,4 @@
-package com.clinicops.domain.ops.dto;
+package com.clinicops.ops.appointment.dto;
 
 import java.time.Instant;
 

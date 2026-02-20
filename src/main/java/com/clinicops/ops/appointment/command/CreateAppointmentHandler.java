@@ -1,7 +1,8 @@
-package com.clinicops.application.command.appointment;
+package com.clinicops.ops.appointment.command;
 
 import com.clinicops.application.command.CommandHandler;
-import com.clinicops.domain.ops.service.AppointmentService;
+import com.clinicops.ops.appointment.service.AppointmentService;
+
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
 

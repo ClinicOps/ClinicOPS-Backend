@@ -1,4 +1,4 @@
-package com.clinicops.application.command.appointment;
+package com.clinicops.ops.appointment.command;
 
 import com.clinicops.application.command.Command;
 

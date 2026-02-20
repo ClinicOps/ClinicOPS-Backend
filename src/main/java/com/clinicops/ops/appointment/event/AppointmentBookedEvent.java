@@ -1,4 +1,4 @@
-package com.clinicops.infra.messaging.events;
+package com.clinicops.ops.appointment.event;
 
 import java.time.Instant;
 
