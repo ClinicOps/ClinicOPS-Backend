@@ -1,5 +1,6 @@
 package com.clinicops.application.command;
 
+import com.clinicops.common.exception.AuthorizationException;
 import com.clinicops.domain.access.service.PermissionEvaluator;
 import com.clinicops.security.AuthenticatedUser;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,7 +34,7 @@ public class CommandGateway {
         );
 
         if (!allowed) {
-            throw new RuntimeException("Forbidden");
+        	throw new AuthorizationException("Forbidden");
         }
 
         handler.handle(command);
