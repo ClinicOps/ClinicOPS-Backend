@@ -1,5 +1,15 @@
 package com.clinicops.domain.clinic.repository;
 
-public class ClinicMemberRepository {
+import java.util.List;
+
+import org.bson.types.ObjectId;
+import org.springframework.data.mongodb.repository.MongoRepository;
+
+import com.clinicops.domain.clinic.model.ClinicMember;
+
+public interface ClinicMemberRepository extends MongoRepository<ClinicMember, ObjectId>{
+
+	List<ClinicMember> findByUserIdAndDeletedFalse(ObjectId userId);
 
 }
+
