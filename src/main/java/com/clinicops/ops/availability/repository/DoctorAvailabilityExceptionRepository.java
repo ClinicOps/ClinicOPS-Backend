@@ -8,12 +8,11 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 import com.clinicops.ops.availability.model.DoctorAvailabilityException;
 
-public interface DoctorAvailabilityExceptionRepository
-extends MongoRepository<DoctorAvailabilityException, ObjectId> {
+public interface DoctorAvailabilityExceptionRepository extends MongoRepository<DoctorAvailabilityException, ObjectId> {
 
-List<DoctorAvailabilityException> findByClinicIdAndDoctorIdAndDate(
-ObjectId clinicId,
-ObjectId doctorId,
-LocalDate date
-);
+	List<DoctorAvailabilityException> findByClinicIdAndDoctorIdAndDate(ObjectId clinicId, ObjectId doctorId,
+			LocalDate date);
+
+	List<DoctorAvailabilityException> findByClinicIdAndDoctorIdAndDateBetween(ObjectId clinicId, ObjectId doctorId,
+			LocalDate from, LocalDate to);
 }
