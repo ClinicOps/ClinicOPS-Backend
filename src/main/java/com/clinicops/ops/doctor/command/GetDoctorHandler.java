@@ -7,18 +7,17 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class CreateDoctorHandler
-        implements CommandHandler<CreateDoctorCommand> {
+public class GetDoctorHandler implements CommandHandler<GetDoctorCommand> {
 
     private final DoctorService doctorService;
 
     @Override
-    public void handle(CreateDoctorCommand command) {
+    public void handle(GetDoctorCommand command) {
 
         command.setResult(
-                doctorService.createDoctor(
+                doctorService.getDoctor(
                         command.getClinicId(),
-                        command.getRequest()
+                        command.getClinicDoctorId()
                 )
         );
     }

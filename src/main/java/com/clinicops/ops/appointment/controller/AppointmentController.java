@@ -1,6 +1,7 @@
 package com.clinicops.ops.appointment.controller;
 
 import com.clinicops.application.command.CommandGateway;
+import com.clinicops.common.exception.AuthorizationException;
 import com.clinicops.ops.appointment.command.CancelAppointmentCommand;
 import com.clinicops.ops.appointment.command.CancelAppointmentHandler;
 import com.clinicops.ops.appointment.command.CreateAppointmentCommand;
@@ -38,7 +39,7 @@ public class AppointmentController {
     @PostMapping
     public void create(
     		@RequestBody CreateAppointmentRequest req,
-            HttpServletRequest request) {
+            HttpServletRequest request) throws AuthorizationException {
 
     	 CreateAppointmentCommand cmd =
     		        new CreateAppointmentCommand(
@@ -54,7 +55,7 @@ public class AppointmentController {
     @DeleteMapping("/{id}")
     public void cancel(
             @PathVariable String id,
-            HttpServletRequest request) {
+            HttpServletRequest request) throws AuthorizationException {
 
         CancelAppointmentCommand cmd =
                 new CancelAppointmentCommand(id);

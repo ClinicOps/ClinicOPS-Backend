@@ -1,5 +1,9 @@
 package com.clinicops.ops.doctor.controller;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.List;
+
 import org.bson.types.ObjectId;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,10 +20,21 @@ import org.springframework.web.bind.annotation.RestController;
 import com.clinicops.application.command.CommandGateway;
 import com.clinicops.common.api.ApiResponse;
 import com.clinicops.common.api.PageResponse;
+import com.clinicops.common.exception.AuthorizationException;
 import com.clinicops.ops.doctor.command.ArchiveDoctorCommand;
+import com.clinicops.ops.doctor.command.ArchiveDoctorHandler;
+import com.clinicops.ops.doctor.command.BulkArchiveDoctorsCommand;
+import com.clinicops.ops.doctor.command.BulkArchiveDoctorsHandler;
 import com.clinicops.ops.doctor.command.ChangeDoctorStatusCommand;
+import com.clinicops.ops.doctor.command.ChangeDoctorStatusHandler;
 import com.clinicops.ops.doctor.command.CreateDoctorCommand;
+import com.clinicops.ops.doctor.command.CreateDoctorHandler;
+import com.clinicops.ops.doctor.command.GetDoctorCommand;
+import com.clinicops.ops.doctor.command.GetDoctorHandler;
+import com.clinicops.ops.doctor.command.ListDoctorsCommand;
+import com.clinicops.ops.doctor.command.ListDoctorsHandler;
 import com.clinicops.ops.doctor.command.UpdateDoctorCommand;
+import com.clinicops.ops.doctor.command.UpdateDoctorHandler;
 import com.clinicops.ops.doctor.dto.ChangeDoctorStatusRequest;
 import com.clinicops.ops.doctor.dto.CreateDoctorRequest;
 import com.clinicops.ops.doctor.dto.DoctorResponse;
@@ -28,6 +43,7 @@ import com.clinicops.ops.doctor.model.DoctorStatus;
 import com.clinicops.ops.doctor.service.DoctorService;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -36,106 +52,126 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class DoctorController {
 
-    private final CommandGateway commandGateway;
-    private final DoctorService doctorService;
-    
-    @PostMapping
-    public ApiResponse<DoctorResponse> create(
-            @PathVariable String clinicId,
-            @Valid @RequestBody CreateDoctorRequest request,
-            HttpServletRequest httpRequest) {
+	private final CommandGateway commandGateway;
 
-        CreateDoctorCommand command =
-                new CreateDoctorCommand(
-                        new ObjectId(clinicId),
-                        request);
+	private final CreateDoctorHandler createDoctorHandler;
+	private final UpdateDoctorHandler updateDoctorHandler;
+	private final ChangeDoctorStatusHandler changeDoctorStatusHandler;
+	private final ArchiveDoctorHandler archiveDoctorHandler;
+	private final GetDoctorHandler getDoctorHandler;
+	private final ListDoctorsHandler listDoctorsHandler;
+	private final BulkArchiveDoctorsHandler bulkArchiveDoctorsHandler;
 
-        commandGateway.execute(
-                command,
-                httpRequest,
-                createDoctorHandler);
+	private final DoctorService doctorService;
 
-        return ApiResponse.ok(command.getResult());
-    }
-    
-    @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('OPS_DOCTOR_UPDATE')")
-    public ApiResponse<DoctorResponse> update(
-            @PathVariable String clinicId,
-            @PathVariable String id,
-            @Valid @RequestBody UpdateDoctorRequest request) {
+	@PostMapping
+	public ApiResponse<DoctorResponse> create(@PathVariable String clinicId,
+			@Valid @RequestBody CreateDoctorRequest request, HttpServletRequest httpRequest)
+			throws AuthorizationException {
 
-        DoctorResponse response =
-                commandGateway.dispatch(
-                        new UpdateDoctorCommand(
-                                new ObjectId(clinicId),
-                                new ObjectId(id),
-                                request));
+		CreateDoctorCommand command = new CreateDoctorCommand(new ObjectId(clinicId), request);
 
-        return ApiResponse.success(response);
-    }
-    
-    @PatchMapping("/{id}/status")
-    @PreAuthorize("hasAuthority('OPS_DOCTOR_STATUS_CHANGE')")
-    public ApiResponse<Void> changeStatus(
-            @PathVariable String clinicId,
-            @PathVariable String id,
-            @Valid @RequestBody ChangeDoctorStatusRequest request) {
+		commandGateway.execute(command, httpRequest, createDoctorHandler);
 
-        commandGateway.dispatch(
-                new ChangeDoctorStatusCommand(
-                        new ObjectId(clinicId),
-                        new ObjectId(id),
-                        request));
+		return ApiResponse.ok(command.getResult());
+	}
 
-        return ApiResponse.success();
-    }
-    
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('OPS_DOCTOR_ARCHIVE')")
-    public ApiResponse<Void> archive(
-            @PathVariable String clinicId,
-            @PathVariable String id) {
+	@PutMapping("/{id}")
+	public ApiResponse<DoctorResponse> update(@PathVariable String clinicId, @PathVariable String id,
+			@Valid @RequestBody UpdateDoctorRequest request, HttpServletRequest httpRequest)
+			throws AuthorizationException {
 
-        commandGateway.dispatch(
-                new ArchiveDoctorCommand(
-                        new ObjectId(clinicId),
-                        new ObjectId(id)));
+		UpdateDoctorCommand command = new UpdateDoctorCommand(new ObjectId(clinicId), new ObjectId(id), request);
 
-        return ApiResponse.success();
-    }
-    
-    @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('OPS_DOCTOR_VIEW')")
-    public ApiResponse<DoctorResponse> get(
-            @PathVariable String clinicId,
-            @PathVariable String id) {
+		commandGateway.execute(command, httpRequest, updateDoctorHandler);
 
-        return ApiResponse.success(
-                doctorService.getDoctor(
-                        new ObjectId(clinicId),
-                        new ObjectId(id)));
-    }
-    
-    @GetMapping
-    @PreAuthorize("hasAuthority('OPS_DOCTOR_VIEW')")
-    public ApiResponse<PageResponse<DoctorResponse>> list(
-            @PathVariable String clinicId,
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false) String specialization,
-            @RequestParam(required = false) DoctorStatus status,
-            @RequestParam(required = false) Boolean available,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+		return ApiResponse.ok(command.getResult());
+	}
 
-        return ApiResponse.success(
-                doctorService.listDoctors(
-                        new ObjectId(clinicId),
-                        search,
-                        specialization,
-                        status,
-                        available,
-                        page,
-                        size));
-    }
+	@PatchMapping("/{id}/status")
+	public ApiResponse<Void> changeStatus(@PathVariable String clinicId, @PathVariable String id,
+			@Valid @RequestBody ChangeDoctorStatusRequest request, HttpServletRequest httpRequest)
+			throws AuthorizationException {
+
+		ChangeDoctorStatusCommand command = new ChangeDoctorStatusCommand(new ObjectId(clinicId), new ObjectId(id),
+				request);
+
+		commandGateway.execute(command, httpRequest, changeDoctorStatusHandler);
+
+		return ApiResponse.ok();
+	}
+
+	@DeleteMapping("/{id}")
+	public ApiResponse<Void> archive(@PathVariable String clinicId, @PathVariable String id,
+			HttpServletRequest httpRequest) throws AuthorizationException {
+
+		ArchiveDoctorCommand command = new ArchiveDoctorCommand(new ObjectId(clinicId), new ObjectId(id));
+
+		commandGateway.execute(command, httpRequest, archiveDoctorHandler);
+
+		return ApiResponse.ok();
+	}
+
+	@GetMapping("/{id}")
+	@PreAuthorize("hasAuthority('OPS_DOCTOR_VIEW')")
+	public ApiResponse<DoctorResponse> get(@PathVariable String clinicId, @PathVariable String id,
+			HttpServletRequest request) throws AuthorizationException {
+
+		GetDoctorCommand command = new GetDoctorCommand(new ObjectId(clinicId), new ObjectId(id));
+
+		commandGateway.execute(command, request, getDoctorHandler);
+
+		return ApiResponse.ok(command.getResult());
+	}
+
+	@GetMapping
+	@PreAuthorize("hasAuthority('OPS_DOCTOR_VIEW')")
+	public ApiResponse<PageResponse<DoctorResponse>> list(@PathVariable String clinicId,
+			@RequestParam(required = false) String search, @RequestParam(required = false) String specialization,
+			@RequestParam(required = false) DoctorStatus status, @RequestParam(required = false) Boolean available,
+			@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
+			HttpServletRequest request) throws AuthorizationException {
+
+		ListDoctorsCommand command = new ListDoctorsCommand(new ObjectId(clinicId), search, specialization, status,
+				available, page, size);
+
+		commandGateway.execute(command, request, listDoctorsHandler);
+
+		return ApiResponse.ok(command.getResult());
+	}
+
+	@PostMapping("/bulk-archive")
+	@PreAuthorize("hasAuthority('OPS_DOCTOR_ARCHIVE')")
+	public ApiResponse<Void> bulkArchive(@PathVariable String clinicId, @RequestBody List<String> ids,
+			HttpServletRequest request) throws AuthorizationException {
+
+		List<ObjectId> objectIds = ids.stream().map(ObjectId::new).toList();
+
+		BulkArchiveDoctorsCommand command = new BulkArchiveDoctorsCommand(new ObjectId(clinicId), objectIds);
+
+		commandGateway.execute(command, request, bulkArchiveDoctorsHandler);
+
+		return ApiResponse.ok();
+	}
+
+	@GetMapping("/export")
+	@PreAuthorize("hasAuthority('OPS_DOCTOR_VIEW')")
+	public void export(@PathVariable String clinicId, HttpServletResponse response) throws IOException {
+
+		response.setContentType("text/csv");
+		response.setHeader("Content-Disposition", "attachment; filename=doctors.csv");
+
+		List<DoctorResponse> doctors = doctorService.exportDoctors(new ObjectId(clinicId));
+
+		PrintWriter writer = response.getWriter();
+
+		writer.println("Name,License,Status,Available,Specializations,Fee");
+
+		for (DoctorResponse d : doctors) {
+			writer.printf("%s %s,%s,%s,%s,%s,%d%n", d.getFirstName(), d.getLastName(), d.getLicenseNumber(),
+					d.getStatus(), d.getAvailable(), String.join("|", d.getSpecializations()), d.getConsultationFee());
+		}
+
+		writer.flush();
+	}
 }

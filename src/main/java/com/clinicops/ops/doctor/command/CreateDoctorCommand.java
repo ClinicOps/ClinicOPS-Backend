@@ -1,17 +1,16 @@
 package com.clinicops.ops.doctor.command;
 
-import org.bson.types.ObjectId;
-
 import com.clinicops.application.command.Command;
-import com.clinicops.ops.doctor.dto.DoctorResponse;
 import com.clinicops.ops.doctor.dto.CreateDoctorRequest;
+import com.clinicops.ops.doctor.dto.DoctorResponse;
+import org.bson.types.ObjectId;
 
 public class CreateDoctorCommand implements Command {
 
     private final ObjectId clinicId;
     private final CreateDoctorRequest request;
 
-    private DoctorResponse result; // 🔥 store output
+    private DoctorResponse result;
 
     public CreateDoctorCommand(ObjectId clinicId,
                                CreateDoctorRequest request) {
@@ -34,14 +33,19 @@ public class CreateDoctorCommand implements Command {
         return "CREATE";
     }
 
-    public ObjectId getClinicId() { return clinicId; }
-    public CreateDoctorRequest getRequest() { return request; }
+    public ObjectId getClinicId() {
+        return clinicId;
+    }
 
-    public void setResult(DoctorResponse result) {
-        this.result = result;
+    public CreateDoctorRequest getRequest() {
+        return request;
     }
 
     public DoctorResponse getResult() {
         return result;
+    }
+
+    public void setResult(DoctorResponse result) {
+        this.result = result;
     }
 }

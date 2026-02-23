@@ -28,9 +28,6 @@ import lombok.Setter;
 @Setter
 public class ClinicDoctor extends BaseEntity {
 
-    @Id
-    private ObjectId id;
-
     private ObjectId clinicId;
     private ObjectId doctorId;
 

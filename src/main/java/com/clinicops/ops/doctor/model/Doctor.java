@@ -18,9 +18,6 @@ import lombok.Setter;
 @Setter
 public class Doctor extends BaseEntity {
 
-    @Id
-    private ObjectId id;
-
     @Indexed(unique = true)
     private String licenseNumber;
 

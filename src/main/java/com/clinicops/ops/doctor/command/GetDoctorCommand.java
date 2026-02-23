@@ -1,24 +1,19 @@
 package com.clinicops.ops.doctor.command;
 
 import com.clinicops.application.command.Command;
-import com.clinicops.ops.doctor.dto.UpdateDoctorRequest;
 import com.clinicops.ops.doctor.dto.DoctorResponse;
 import org.bson.types.ObjectId;
 
-public class UpdateDoctorCommand implements Command {
+public class GetDoctorCommand implements Command {
 
     private final ObjectId clinicId;
     private final ObjectId clinicDoctorId;
-    private final UpdateDoctorRequest request;
 
     private DoctorResponse result;
 
-    public UpdateDoctorCommand(ObjectId clinicId,
-                               ObjectId clinicDoctorId,
-                               UpdateDoctorRequest request) {
+    public GetDoctorCommand(ObjectId clinicId, ObjectId clinicDoctorId) {
         this.clinicId = clinicId;
         this.clinicDoctorId = clinicDoctorId;
-        this.request = request;
     }
 
     @Override
@@ -33,7 +28,7 @@ public class UpdateDoctorCommand implements Command {
 
     @Override
     public String action() {
-        return "UPDATE";
+        return "VIEW";
     }
 
     public ObjectId getClinicId() {
@@ -42,10 +37,6 @@ public class UpdateDoctorCommand implements Command {
 
     public ObjectId getClinicDoctorId() {
         return clinicDoctorId;
-    }
-
-    public UpdateDoctorRequest getRequest() {
-        return request;
     }
 
     public DoctorResponse getResult() {

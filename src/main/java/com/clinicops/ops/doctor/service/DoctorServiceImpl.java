@@ -1,9 +1,8 @@
 package com.clinicops.ops.doctor.service;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
-
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +10,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.stereotype.Service;
 
 import com.clinicops.common.api.PageResponse;
 import com.clinicops.common.exception.BusinessException;
@@ -26,166 +27,168 @@ import com.clinicops.ops.doctor.model.DoctorStatus;
 import com.clinicops.ops.doctor.repository.ClinicDoctorRepository;
 import com.clinicops.ops.doctor.repository.DoctorRepository;
 
-import io.jsonwebtoken.lang.Objects;
+import lombok.RequiredArgsConstructor;
 
-public class DoctorServiceImpl implements DoctorService{
-	
-	@Autowired
-	DoctorRepository doctorRepository;
-	@Autowired
-	ClinicDoctorRepository clinicDoctorRepository;
-	@Autowired
-	MongoTemplate mongoTemplate;
-	
+@Service
+@RequiredArgsConstructor
+public class DoctorServiceImpl implements DoctorService {
+
+	private final DoctorRepository doctorRepository;
+	private final ClinicDoctorRepository clinicDoctorRepository;
+	private final MongoTemplate mongoTemplate;
+
 	@Override
 	public DoctorResponse createDoctor(ObjectId clinicId, CreateDoctorRequest request) {
 
-	    Doctor doctor = doctorRepository
-	            .findByLicenseNumber(request.getLicenseNumber())
-	            .orElseGet(() -> {
-	                Doctor newDoctor = new Doctor();
-	                newDoctor.setLicenseNumber(request.getLicenseNumber());
-	                newDoctor.setFirstName(request.getFirstName());
-	                newDoctor.setLastName(request.getLastName());
-	                newDoctor.setPhone(request.getPhone());
-	                newDoctor.setEmail(request.getEmail());
-	                newDoctor.setQualifications(request.getQualifications());
-	                newDoctor.setProfileImageUrl(request.getProfileImageUrl());
-	                return doctorRepository.save(newDoctor);
-	            });
+		Doctor doctor = doctorRepository.findByLicenseNumber(request.getLicenseNumber()).orElseGet(() -> {
+			Doctor newDoctor = new Doctor();
+			newDoctor.setLicenseNumber(request.getLicenseNumber());
+			newDoctor.setFirstName(request.getFirstName());
+			newDoctor.setLastName(request.getLastName());
+			newDoctor.setPhone(request.getPhone());
+			newDoctor.setEmail(request.getEmail());
+			newDoctor.setQualifications(request.getQualifications());
+			newDoctor.setProfileImageUrl(request.getProfileImageUrl());
+			return doctorRepository.save(newDoctor);
+		});
 
-	    if (clinicDoctorRepository.existsByClinicIdAndDoctorId(clinicId, doctor.getId())) {
-	        throw new BusinessException("Doctor already assigned to clinic");
-	    }
+		if (clinicDoctorRepository.existsByClinicIdAndDoctorId(clinicId, doctor.getId())) {
+			throw new BusinessException("Doctor already assigned to clinic");
+		}
 
-	    ClinicDoctor clinicDoctor = new ClinicDoctor();
-	    clinicDoctor.setClinicId(clinicId);
-	    clinicDoctor.setDoctorId(doctor.getId());
-	    clinicDoctor.setSpecializations(request.getSpecializations());
-	    clinicDoctor.setConsultationFee(request.getConsultationFee());
-	    clinicDoctor.setStatus(request.getStatus());
-	    clinicDoctor.setAvailable(true);
-	    clinicDoctor.setArchived(false);
+		ClinicDoctor clinicDoctor = new ClinicDoctor();
+		clinicDoctor.setClinicId(clinicId);
+		clinicDoctor.setDoctorId(doctor.getId());
+		clinicDoctor.setSpecializations(request.getSpecializations());
+		clinicDoctor.setConsultationFee(request.getConsultationFee());
+		clinicDoctor.setStatus(request.getStatus());
+		clinicDoctor.setAvailable(true);
+		clinicDoctor.setArchived(false);
 
-	    validateVisitingConfiguration(request.getStatus(),
-	            request.getVisitingFrom(),
-	            request.getVisitingTo());
+		validateVisitingConfiguration(request.getStatus(), request.getVisitingFrom(), request.getVisitingTo());
 
-	    clinicDoctor.setVisitingFrom(request.getVisitingFrom());
-	    clinicDoctor.setVisitingTo(request.getVisitingTo());
+		clinicDoctor.setVisitingFrom(request.getVisitingFrom());
+		clinicDoctor.setVisitingTo(request.getVisitingTo());
 
-	    clinicDoctorRepository.save(clinicDoctor);
+		clinicDoctorRepository.save(clinicDoctor);
 
-	    return mapToResponse(doctor, clinicDoctor);
+		return mapToResponse(doctor, clinicDoctor);
 	}
-	
-	private void validateVisitingConfiguration(
-	        DoctorStatus status,
-	        LocalDate from,
-	        LocalDate to) {
 
-	    if (status == DoctorStatus.VISITING) {
-	        if (from == null || to == null) {
-	            throw new ValidationException("Visiting period required");
-	        }
-	        if (to.isBefore(from)) {
-	            throw new ValidationException("Invalid visiting range");
-	        }
-	    } else {
-	        if (from != null || to != null) {
-	            throw new ValidationException("Visiting dates allowed only for VISITING doctors");
-	        }
-	    }
+	private void validateVisitingConfiguration(DoctorStatus status, LocalDate from, LocalDate to) {
+
+		if (status == DoctorStatus.VISITING) {
+			if (from == null || to == null) {
+				throw new ValidationException("Visiting period required");
+			}
+			if (to.isBefore(from)) {
+				throw new ValidationException("Invalid visiting range");
+			}
+		} else {
+			if (from != null || to != null) {
+				throw new ValidationException("Visiting dates allowed only for VISITING doctors");
+			}
+		}
 	}
-	
+
 	private boolean computeEffectiveAvailability(ClinicDoctor cd) {
 
-	    if (cd.getStatus() == DoctorStatus.VISITING) {
-	        LocalDate today = LocalDate.now();
-	        if (today.isBefore(cd.getVisitingFrom()) ||
-	            today.isAfter(cd.getVisitingTo())) {
-	            return false;
-	        }
-	    }
+		if (cd.getStatus() == DoctorStatus.VISITING) {
+			LocalDate today = LocalDate.now();
+			if (today.isBefore(cd.getVisitingFrom()) || today.isAfter(cd.getVisitingTo())) {
+				return false;
+			}
+		}
 
-	    return Boolean.TRUE.equals(cd.getAvailable());
+		return Boolean.TRUE.equals(cd.getAvailable());
 	}
-	
+
 	@Override
-	public PageResponse<DoctorResponse> listDoctors(
-	        ObjectId clinicId,
-	        String search,
-	        String specialization,
-	        DoctorStatus status,
-	        Boolean available,
-	        int page,
-	        int size) {
+	public PageResponse<DoctorResponse> listDoctors(ObjectId clinicId, String search, String specialization,
+			DoctorStatus status, Boolean available, int page, int size) {
 
-	    Criteria criteria = Criteria.where("clinicId").is(clinicId)
-	            .and("archived").is(false);
+		Criteria criteria = Criteria.where("clinicId").is(clinicId).and("archived").is(false);
 
-	    if (status != null) {
-	        criteria.and("status").is(status);
-	    }
+		if (status != null) {
+			criteria.and("status").is(status);
+		}
 
-	    if (specialization != null) {
-	        criteria.and("specializations").is(specialization);
-	    }
+		if (specialization != null) {
+			criteria.and("specializations").is(specialization);
+		}
 
-	    Query query = new Query(criteria);
-	    query.with(PageRequest.of(page, size));
+		Query query = new Query(criteria);
+		query.with(PageRequest.of(page, size));
 
-	    List<ClinicDoctor> clinicDoctors =
-	            mongoTemplate.find(query, ClinicDoctor.class);
+		List<ClinicDoctor> clinicDoctors = mongoTemplate.find(query, ClinicDoctor.class);
 
-	    long total = mongoTemplate.count(query.skip(-1).limit(-1), ClinicDoctor.class);
+		long total = mongoTemplate.count(query.skip(-1).limit(-1), ClinicDoctor.class);
 
-	    List<DoctorResponse> responses = clinicDoctors.stream()
-	            .map(cd -> {
-	                Doctor doctor = doctorRepository.findById(cd.getDoctorId())
-	                        .orElseThrow(() -> new NotFoundException("Doctor missing"));
+		List<DoctorResponse> responses = clinicDoctors.stream().map(cd -> {
+			Doctor doctor = doctorRepository.findById(cd.getDoctorId())
+					.orElseThrow(() -> new NotFoundException("Doctor missing"));
 
-	                DoctorResponse response = mapToResponse(doctor, cd);
+			DoctorResponse response = mapToResponse(doctor, cd);
 
-	                if (available != null &&
-	                        response.getAvailable() != available) {
-	                    return null;
-	                }
+			if (available != null && response.getAvailable() != available) {
+				return null;
+			}
 
-	                if (search != null &&
-	                        !doctor.getFirstName().toLowerCase().contains(search.toLowerCase()) &&
-	                        !doctor.getLastName().toLowerCase().contains(search.toLowerCase())) {
-	                    return null;
-	                }
+			if (search != null && !doctor.getFirstName().toLowerCase().contains(search.toLowerCase())
+					&& !doctor.getLastName().toLowerCase().contains(search.toLowerCase())) {
+				return null;
+			}
 
-	                return response;
-	            })
-	            .filter(Objects::nonNull)
-	            .toList();
+			return response;
+		}).filter(Objects::nonNull).toList();
 
-	    return PageResponse.of(responses, page, size, total);
+		return PageResponse.of(responses, page, size, total);
 	}
-	
+
 	private DoctorResponse mapToResponse(Doctor doctor, ClinicDoctor cd) {
 
-	    DoctorResponse response = new DoctorResponse();
+		DoctorResponse response = new DoctorResponse();
 
-	    response.setId(doctor.getId().toHexString());
-	    response.setClinicDoctorId(cd.getId().toHexString());
+		response.setId(doctor.getId().toHexString());
+		response.setClinicDoctorId(cd.getId().toHexString());
 
-	    response.setFirstName(doctor.getFirstName());
-	    response.setLastName(doctor.getLastName());
-	    response.setLicenseNumber(doctor.getLicenseNumber());
-	    response.setProfileImageUrl(doctor.getProfileImageUrl());
+		response.setFirstName(doctor.getFirstName());
+		response.setLastName(doctor.getLastName());
+		response.setLicenseNumber(doctor.getLicenseNumber());
+		response.setProfileImageUrl(doctor.getProfileImageUrl());
 
-	    response.setSpecializations(cd.getSpecializations());
-	    response.setConsultationFee(cd.getConsultationFee());
-	    response.setStatus(cd.getStatus());
-	    response.setArchived(cd.getArchived());
+		response.setSpecializations(cd.getSpecializations());
+		response.setConsultationFee(cd.getConsultationFee());
+		response.setStatus(cd.getStatus());
+		response.setArchived(cd.getArchived());
 
-	    response.setAvailable(computeEffectiveAvailability(cd));
+		response.setAvailable(computeEffectiveAvailability(cd));
 
-	    return response;
+		return response;
+	}
+
+	@Override
+	public void bulkArchive(ObjectId clinicId, List<ObjectId> ids) {
+
+		Query query = new Query(Criteria.where("_id").in(ids).and("clinicId").is(clinicId));
+
+		Update update = new Update().set("archived", true);
+
+		mongoTemplate.updateMulti(query, update, ClinicDoctor.class);
+	}
+
+	@Override
+	public List<DoctorResponse> exportDoctors(ObjectId clinicId) {
+
+		Query query = new Query(Criteria.where("clinicId").is(clinicId).and("archived").is(false));
+
+		List<ClinicDoctor> clinicDoctors = mongoTemplate.find(query, ClinicDoctor.class);
+
+		return clinicDoctors.stream().map(cd -> {
+			Doctor doctor = doctorRepository.findById(cd.getId()).orElseThrow();
+
+			return mapToResponse(doctor, cd);
+		}).toList();
 	}
 
 	@Override
