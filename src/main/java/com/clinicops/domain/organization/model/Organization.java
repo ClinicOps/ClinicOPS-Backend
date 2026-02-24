@@ -19,9 +19,6 @@ import lombok.Setter;
 @Setter
 public class Organization extends BaseEntity {
 
-    @Id
-    private ObjectId id;
-
     private String name;
 
     private String code;

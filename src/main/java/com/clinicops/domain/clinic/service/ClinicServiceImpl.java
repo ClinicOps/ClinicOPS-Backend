@@ -3,6 +3,7 @@ package com.clinicops.domain.clinic.service;
 import java.util.List;
 
 import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,8 +26,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ClinicServiceImpl implements ClinicService {
 	
+	@Autowired
 	private OrganizationRepository organizationRepository;
+	@Autowired
 	private ClinicRepository clinicRepository;
+	@Autowired
 	private ClinicMemberRepository clinicMemberRepository;
 
 	@Transactional

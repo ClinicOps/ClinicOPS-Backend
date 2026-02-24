@@ -29,13 +29,13 @@ public class PermissionEvaluator {
     }
 
     public boolean isAllowed(
-            String userId,
+            ObjectId userObjId,
             String clinicId,
             String domain,
             String resource,
             String action) {
     	
-    	ObjectId userObjId = new ObjectId(userId);
+//    	ObjectId userObjId = new ObjectId(userObjID);
     	ObjectId clinicObjId = new ObjectId(clinicId);
 
         var assignments =

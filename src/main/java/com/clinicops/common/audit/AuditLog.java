@@ -23,7 +23,7 @@ public class AuditLog {
     @Id
     private ObjectId id;
 
-    private String userId;
+    private ObjectId userId;
     private String clinicId;
 
     private String domain;

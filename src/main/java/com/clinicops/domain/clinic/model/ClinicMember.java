@@ -17,9 +17,6 @@ import lombok.Data;
 @Data
 public class ClinicMember extends BaseEntity {
 
-	@Id
-	private ObjectId id;
-
 	private ObjectId userId;
 
 	private ObjectId organizationId;

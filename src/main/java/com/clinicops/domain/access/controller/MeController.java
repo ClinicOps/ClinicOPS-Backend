@@ -71,7 +71,7 @@ public class MeController {
         System.out.println("RBAC check userId=" + user.getUserId()
         + " clinicId=" + clinicId);
         
-        ObjectId userObjId = new ObjectId(user.getUserId());
+        ObjectId userObjId = user.getUserId();
         ObjectId clinicObjId = new ObjectId(clinicId);
 
         // Fetch ACTIVE role assignments

@@ -8,13 +8,15 @@ import lombok.NoArgsConstructor;
 import java.time.Instant;
 import java.util.Map;
 
+import org.bson.types.ObjectId;
+
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class AuditRecord {
 
-    private String userId;
+    private ObjectId userId;
     private String clinicId;
 
     private String domain;

@@ -1,16 +1,15 @@
 package com.clinicops.security;
 
-import java.util.Objects;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.bson.types.ObjectId;
 
+@Getter
+@AllArgsConstructor
 public class AuthenticatedUser {
 
-    private final String userId;
-
-    public AuthenticatedUser(String userId) {
-        this.userId = Objects.requireNonNull(userId);
-    }
-
-    public String getUserId() {
-        return userId;
-    }
+    private ObjectId userId;
+    private ObjectId organizationId;
+    private ObjectId clinicId;
+    private String role;
 }
