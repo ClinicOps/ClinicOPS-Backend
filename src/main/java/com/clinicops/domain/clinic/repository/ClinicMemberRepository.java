@@ -11,5 +11,7 @@ public interface ClinicMemberRepository extends MongoRepository<ClinicMember, Ob
 
 	List<ClinicMember> findByUserIdAndDeletedFalse(ObjectId userId);
 
+	boolean existsByUserIdAndDeletedFalse(ObjectId userId);
+
 }
 
