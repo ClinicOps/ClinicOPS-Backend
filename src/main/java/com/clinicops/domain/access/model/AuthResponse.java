@@ -8,4 +8,12 @@ import lombok.Data;
 public class AuthResponse {
     private String accessToken;
     private String refreshToken;
+    private UserDTO user;
+    
+    // For backward compatibility
+    public AuthResponse(String accessToken, String refreshToken) {
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
+        this.user = null;
+    }
 }

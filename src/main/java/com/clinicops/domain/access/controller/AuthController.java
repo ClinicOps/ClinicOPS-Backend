@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.clinicops.common.api.ApiResponse;
 import com.clinicops.domain.access.model.AuthResponse;
 import com.clinicops.domain.access.model.LoginRequest;
 import com.clinicops.domain.access.model.RegisterRequest;
@@ -21,14 +22,14 @@ public class AuthController {
     private final IdentityService identityService;
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
-        identityService.register(request);
-        return ResponseEntity.ok().build();
+    public ApiResponse<AuthResponse> register(@RequestBody RegisterRequest request) {
+        AuthResponse response = identityService.register(request);
+        return ApiResponse.ok(response);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(
+    public ApiResponse<AuthResponse> login(
             @RequestBody LoginRequest request) {
-        return ResponseEntity.ok(identityService.login(request));
+        return ApiResponse.ok(identityService.login(request));
     }
 }
