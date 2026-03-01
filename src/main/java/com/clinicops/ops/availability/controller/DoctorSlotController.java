@@ -20,28 +20,28 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/doctors")
+@RequestMapping("/ops/doctors")
 @RequiredArgsConstructor
 public class DoctorSlotController {
 
 	private final SlotGenerationService slotGenerationService;
 
-//	@GetMapping("/{doctorId}/slots")
-//	public List<SlotDTO> getSlots(@PathVariable ObjectId doctorId,
-//			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date, HttpServletRequest request) {
-//
-//        ObjectId clinicId = SecurityUtils.getCurrentClinicId();
-//
-//		return slotGenerationService.generateSlots(clinicId, doctorId, date);
-//	}
-//
-//	@GetMapping("/{doctorId}/calendar")
-//	public List<DailySlotsDTO> getCalendar(@PathVariable ObjectId doctorId,
-//			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-//			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to, HttpServletRequest request) {
-//
-//		ObjectId clinicId = SecurityUtils.getCurrentClinicId();
-//
-//		return slotGenerationService.generateCalendar(clinicId, doctorId, from, to);
-//	}
+	@GetMapping("/{doctorId}/slots")
+	public List<SlotDTO> getSlots(@PathVariable String doctorId,
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date, HttpServletRequest request) {
+
+        ObjectId clinicId = SecurityUtils.getCurrentClinicId();
+
+		return slotGenerationService.generateSlots(clinicId, new ObjectId(doctorId), date);
+	}
+
+	@GetMapping("/{doctorId}/calendar")
+	public List<DailySlotsDTO> getCalendar(@PathVariable String doctorId,
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to, HttpServletRequest request) {
+
+		ObjectId clinicId = SecurityUtils.getCurrentClinicId();
+
+		return slotGenerationService.generateCalendar(clinicId, new ObjectId(doctorId), from, to);
+	}
 }

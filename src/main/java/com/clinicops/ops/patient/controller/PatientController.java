@@ -3,54 +3,60 @@ package com.clinicops.ops.patient.controller;
 import com.clinicops.ops.patient.dto.CreatePatientRequest;
 import com.clinicops.ops.patient.dto.PatientResponse;
 import com.clinicops.ops.patient.service.PatientService;
+import com.clinicops.security.SecurityUtils;
 
 import lombok.RequiredArgsConstructor;
+import org.bson.types.ObjectId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/clinics/{clinicId}/patients")
+@RequestMapping("/ops/patients")
 @RequiredArgsConstructor
 public class PatientController {
 
 	private final PatientService patientService;
 
 	@PostMapping
-	public PatientResponse create(@PathVariable String clinicId, @RequestBody CreatePatientRequest request) {
-		return patientService.create(clinicId, request);
+	public PatientResponse create(@RequestBody CreatePatientRequest request) {
+		ObjectId clinicId = SecurityUtils.getCurrentClinicId();
+		return patientService.create(clinicId.toString(), request);
 	}
 
 	@GetMapping
-	public Page<PatientResponse> list(@PathVariable String clinicId, 
+	public Page<PatientResponse> list(
 			@RequestParam(defaultValue = "0") int page,
 	        @RequestParam(defaultValue = "10") int size,
 	        @RequestParam(required = false) String query,
 	        @RequestParam(required = false) String status) {
-		return patientService.list(clinicId, page, size, query, status);
+		ObjectId clinicId = SecurityUtils.getCurrentClinicId();
+		return patientService.list(clinicId.toString(), page, size, query, status);
 	}
 	
 	@GetMapping("/{patientId}")
-	public PatientResponse getById(@PathVariable String clinicId,
-	                               @PathVariable String patientId) {
-	    return patientService.getById(clinicId, patientId);
+	public PatientResponse getById(@PathVariable String patientId) {
+		ObjectId clinicId = SecurityUtils.getCurrentClinicId();
+	    return patientService.getById(clinicId.toString(), patientId);
 	}
 
-
 	@PutMapping("/{patientId}")
-	public PatientResponse update(@PathVariable String clinicId, @PathVariable String patientId,
+	public PatientResponse update(@PathVariable String patientId,
 			@RequestBody CreatePatientRequest request) {
-		return patientService.update(clinicId, patientId, request);
+		ObjectId clinicId = SecurityUtils.getCurrentClinicId();
+		return patientService.update(clinicId.toString(), patientId, request);
 	}
 
 	@PatchMapping("/{patientId}/archive")
-	public void archive(@PathVariable String clinicId, @PathVariable String patientId) {
-		patientService.archive(clinicId, patientId);
+	public void archive(@PathVariable String patientId) {
+		ObjectId clinicId = SecurityUtils.getCurrentClinicId();
+		patientService.archive(clinicId.toString(), patientId);
 	}
 
 	@PatchMapping("/{patientId}/activate")
-	public void activate(@PathVariable String clinicId, @PathVariable String patientId) {
-		patientService.activate(clinicId, patientId);
+	public void activate(@PathVariable String patientId) {
+		ObjectId clinicId = SecurityUtils.getCurrentClinicId();
+		patientService.activate(clinicId.toString(), patientId);
 	}
 
 }

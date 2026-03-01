@@ -41,6 +41,7 @@ import com.clinicops.ops.doctor.dto.DoctorResponse;
 import com.clinicops.ops.doctor.dto.UpdateDoctorRequest;
 import com.clinicops.ops.doctor.model.DoctorStatus;
 import com.clinicops.ops.doctor.service.DoctorService;
+import com.clinicops.security.SecurityUtils;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -48,7 +49,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/clinics/{clinicId}/doctors")
+@RequestMapping("/ops/doctors")
 @RequiredArgsConstructor
 public class DoctorController {
 
@@ -65,11 +66,12 @@ public class DoctorController {
 	private final DoctorService doctorService;
 
 	@PostMapping
-	public ApiResponse<DoctorResponse> create(@PathVariable String clinicId,
+	public ApiResponse<DoctorResponse> create(
 			@Valid @RequestBody CreateDoctorRequest request, HttpServletRequest httpRequest)
 			throws AuthorizationException {
 
-		CreateDoctorCommand command = new CreateDoctorCommand(new ObjectId(clinicId), request);
+		ObjectId clinicId = SecurityUtils.getCurrentClinicId();
+		CreateDoctorCommand command = new CreateDoctorCommand(clinicId, request);
 
 		commandGateway.execute(command, httpRequest, createDoctorHandler);
 
@@ -77,11 +79,12 @@ public class DoctorController {
 	}
 
 	@PutMapping("/{id}")
-	public ApiResponse<DoctorResponse> update(@PathVariable String clinicId, @PathVariable String id,
+	public ApiResponse<DoctorResponse> update(@PathVariable String id,
 			@Valid @RequestBody UpdateDoctorRequest request, HttpServletRequest httpRequest)
 			throws AuthorizationException {
 
-		UpdateDoctorCommand command = new UpdateDoctorCommand(new ObjectId(clinicId), new ObjectId(id), request);
+		ObjectId clinicId = SecurityUtils.getCurrentClinicId();
+		UpdateDoctorCommand command = new UpdateDoctorCommand(clinicId, new ObjectId(id), request);
 
 		commandGateway.execute(command, httpRequest, updateDoctorHandler);
 
@@ -89,12 +92,12 @@ public class DoctorController {
 	}
 
 	@PatchMapping("/{id}/status")
-	public ApiResponse<Void> changeStatus(@PathVariable String clinicId, @PathVariable String id,
+	public ApiResponse<Void> changeStatus(@PathVariable String id,
 			@Valid @RequestBody ChangeDoctorStatusRequest request, HttpServletRequest httpRequest)
 			throws AuthorizationException {
 
-		ChangeDoctorStatusCommand command = new ChangeDoctorStatusCommand(new ObjectId(clinicId), new ObjectId(id),
-				request);
+		ObjectId clinicId = SecurityUtils.getCurrentClinicId();
+		ChangeDoctorStatusCommand command = new ChangeDoctorStatusCommand(clinicId, new ObjectId(id), request);
 
 		commandGateway.execute(command, httpRequest, changeDoctorStatusHandler);
 
@@ -102,10 +105,11 @@ public class DoctorController {
 	}
 
 	@DeleteMapping("/{id}")
-	public ApiResponse<Void> archive(@PathVariable String clinicId, @PathVariable String id,
+	public ApiResponse<Void> archive(@PathVariable String id,
 			HttpServletRequest httpRequest) throws AuthorizationException {
 
-		ArchiveDoctorCommand command = new ArchiveDoctorCommand(new ObjectId(clinicId), new ObjectId(id));
+		ObjectId clinicId = SecurityUtils.getCurrentClinicId();
+		ArchiveDoctorCommand command = new ArchiveDoctorCommand(clinicId, new ObjectId(id));
 
 		commandGateway.execute(command, httpRequest, archiveDoctorHandler);
 
@@ -114,10 +118,11 @@ public class DoctorController {
 
 	@GetMapping("/{id}")
 	@PreAuthorize("hasAuthority('OPS_DOCTOR_VIEW')")
-	public ApiResponse<DoctorResponse> get(@PathVariable String clinicId, @PathVariable String id,
+	public ApiResponse<DoctorResponse> get(@PathVariable String id,
 			HttpServletRequest request) throws AuthorizationException {
 
-		GetDoctorCommand command = new GetDoctorCommand(new ObjectId(clinicId), new ObjectId(id));
+		ObjectId clinicId = SecurityUtils.getCurrentClinicId();
+		GetDoctorCommand command = new GetDoctorCommand(clinicId, new ObjectId(id));
 
 		commandGateway.execute(command, request, getDoctorHandler);
 
@@ -126,13 +131,14 @@ public class DoctorController {
 
 	@GetMapping
 	@PreAuthorize("hasAuthority('OPS_DOCTOR_VIEW')")
-	public ApiResponse<PageResponse<DoctorResponse>> list(@PathVariable String clinicId,
+	public ApiResponse<PageResponse<DoctorResponse>> list(
 			@RequestParam(required = false) String search, @RequestParam(required = false) String specialization,
 			@RequestParam(required = false) DoctorStatus status, @RequestParam(required = false) Boolean available,
 			@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
 			HttpServletRequest request) throws AuthorizationException {
 
-		ListDoctorsCommand command = new ListDoctorsCommand(new ObjectId(clinicId), search, specialization, status,
+		ObjectId clinicId = SecurityUtils.getCurrentClinicId();
+		ListDoctorsCommand command = new ListDoctorsCommand(clinicId, search, specialization, status,
 				available, page, size);
 
 		commandGateway.execute(command, request, listDoctorsHandler);
@@ -142,12 +148,13 @@ public class DoctorController {
 
 	@PostMapping("/bulk-archive")
 	@PreAuthorize("hasAuthority('OPS_DOCTOR_ARCHIVE')")
-	public ApiResponse<Void> bulkArchive(@PathVariable String clinicId, @RequestBody List<String> ids,
+	public ApiResponse<Void> bulkArchive(@RequestBody List<String> ids,
 			HttpServletRequest request) throws AuthorizationException {
 
+		ObjectId clinicId = SecurityUtils.getCurrentClinicId();
 		List<ObjectId> objectIds = ids.stream().map(ObjectId::new).toList();
 
-		BulkArchiveDoctorsCommand command = new BulkArchiveDoctorsCommand(new ObjectId(clinicId), objectIds);
+		BulkArchiveDoctorsCommand command = new BulkArchiveDoctorsCommand(clinicId, objectIds);
 
 		commandGateway.execute(command, request, bulkArchiveDoctorsHandler);
 
@@ -156,12 +163,13 @@ public class DoctorController {
 
 	@GetMapping("/export")
 	@PreAuthorize("hasAuthority('OPS_DOCTOR_VIEW')")
-	public void export(@PathVariable String clinicId, HttpServletResponse response) throws IOException {
+	public void export(HttpServletResponse response) throws IOException {
 
+		ObjectId clinicId = SecurityUtils.getCurrentClinicId();
 		response.setContentType("text/csv");
 		response.setHeader("Content-Disposition", "attachment; filename=doctors.csv");
 
-		List<DoctorResponse> doctors = doctorService.exportDoctors(new ObjectId(clinicId));
+		List<DoctorResponse> doctors = doctorService.exportDoctors(clinicId);
 
 		PrintWriter writer = response.getWriter();
 
