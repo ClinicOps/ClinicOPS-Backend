@@ -72,7 +72,6 @@ public class JwtService {
     }
 
 	public Claims extractClaims(String token) {
-		// TODO Auto-generated method stub
-		return null;
+		return extractAllClaims(token);
 	}
 }

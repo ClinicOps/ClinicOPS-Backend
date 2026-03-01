@@ -1,4 +1,4 @@
-  package com.clinicops.domain.access.controller;
+package com.clinicops.domain.access.controller;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,11 +11,12 @@ import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.clinicops.domain.access.model.Role;
-import com.clinicops.domain.access.model.UserRoleAssignment;
 import com.clinicops.domain.access.repository.PermissionRepository;
 import com.clinicops.domain.access.repository.RoleRepository;
 import com.clinicops.domain.access.repository.UserRoleAssignmentRepository;
@@ -50,10 +51,14 @@ public class MeController {
 
     @GetMapping("/me")
     public Map<String, Object> me(HttpServletRequest request) {
-        AuthenticatedUser user =
-                (AuthenticatedUser) request.getAttribute("AUTH_USER");
-        String clinicId =
-                (String) request.getAttribute("CLINIC_ID");
+        // Get user from SecurityContext (set by AuthFilter)
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        AuthenticatedUser user = auth != null && auth.getPrincipal() instanceof AuthenticatedUser
+                ? (AuthenticatedUser) auth.getPrincipal()
+                : null;
+        
+        // Get clinic from request attribute (set by ClinicContextFilter)
+        String clinicId = (String) request.getAttribute("CLINIC_ID");
         
         Map<String, Object> response = new HashMap<>();
         response.put("userId", user != null ? user.getUserId() : null);
@@ -64,10 +69,19 @@ public class MeController {
     
     @GetMapping("/me/permissions")
     public List<String> myPermissions(HttpServletRequest request) {
-        AuthenticatedUser user =
-                (AuthenticatedUser) request.getAttribute("AUTH_USER");
-        String clinicId =
-                (String) request.getAttribute("CLINIC_ID");
+        // Get user from SecurityContext (set by AuthFilter)
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        AuthenticatedUser user = auth != null && auth.getPrincipal() instanceof AuthenticatedUser
+                ? (AuthenticatedUser) auth.getPrincipal()
+                : null;
+        
+        // Get clinic from request attribute (set by ClinicContextFilter)
+        String clinicId = (String) request.getAttribute("CLINIC_ID");
+        
+        if (user == null) {
+            return new ArrayList<>();
+        }
+        
         System.out.println("RBAC check userId=" + user.getUserId()
         + " clinicId=" + clinicId);
         

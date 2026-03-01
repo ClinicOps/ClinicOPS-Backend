@@ -9,6 +9,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import com.clinicops.security.AuthenticatedUser;
+
 import java.io.IOException;
 import java.util.Collections;
 
