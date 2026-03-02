@@ -1,5 +1,6 @@
 package com.clinicops.security;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 import org.bson.types.ObjectId;
@@ -18,18 +19,17 @@ public class MongoAuditorAware implements AuditorAware<ObjectId> {
         if (auth == null) {
             return Optional.empty();
         }
+        
+        AuthenticatedUser user = auth != null && auth.getPrincipal() instanceof AuthenticatedUser
+        		? (AuthenticatedUser) auth.getPrincipal()
+        				: null;
+        
+        ObjectId userObjId = user.getUserId();
 
         System.out.println("AUDITOR PRINCIPAL: " + auth.getName());
 
-//        String userId = auth.getName();
-        String userId = "6990202116a40af61054fdbc";
 
-        if (!ObjectId.isValid(userId)) {
-            System.out.println("INVALID OBJECT ID FOR AUDITOR");
-            return Optional.empty();
-        }
-
-        return Optional.of(new ObjectId(userId));
+        return Optional.of(userObjId);
     }
 }
 

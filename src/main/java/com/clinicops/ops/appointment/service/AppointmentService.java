@@ -32,13 +32,13 @@ public class AppointmentService {
 		this.patientRepository = patientRepository;
 	}
 
-	public Appointment create(String clinicIdStr, String patientIdStr, Instant scheduledAt) {
+	public Appointment create(ObjectId objectId, String patientIdStr, Instant scheduledAt) {
 
-		if (!ObjectId.isValid(clinicIdStr) || !ObjectId.isValid(patientIdStr)) {
+		if (!ObjectId.isValid(patientIdStr)) {
 			throw new IllegalArgumentException("Invalid ID");
 		}
 
-		ObjectId clinicId = new ObjectId(clinicIdStr);
+		ObjectId clinicId = objectId;
 		ObjectId patientId = new ObjectId(patientIdStr);
 
 		Patient patient = patientRepository.findByClinicIdAndId(clinicId, patientId)
@@ -152,8 +152,8 @@ public class AppointmentService {
 		appointmentRepository.save(appointment);
 	}
 
-	public List<Appointment> list(String clinicId) {
-		return appointmentRepository.findByClinicId(new ObjectId(clinicId));
+	public List<Appointment> list(ObjectId clinicId) {
+		return appointmentRepository.findByClinicId(clinicId);
 	}
 
 	public Appointment get(String id) {

@@ -4,6 +4,7 @@ import com.clinicops.application.command.CommandHandler;
 import com.clinicops.ops.appointment.model.Appointment;
 import com.clinicops.ops.appointment.service.AppointmentService;
 
+import org.bson.types.ObjectId;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -23,11 +24,11 @@ public class CancelAppointmentHandler
 
     public void handle(
             CancelAppointmentCommand command,
-            String clinicId) {
+            ObjectId objectId) {
 
         Appointment appt = service.get(command.appointmentId);
 
-        if (!appt.getClinicId().toString().equals(clinicId)) {
+        if (!appt.getClinicId().toString().equals(objectId)) {
             throw new RuntimeException("Cross-clinic access denied");
         }
 

@@ -30,7 +30,7 @@ public class DoctorSlotController {
 	public List<SlotDTO> getSlots(@PathVariable String doctorId,
 			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date, HttpServletRequest request) {
 
-        ObjectId clinicId = new ObjectId((String) request.getAttribute("CLINIC_ID"));
+        ObjectId clinicId = SecurityUtils.getCurrentClinicId();
 
 		return slotGenerationService.generateSlots(clinicId, new ObjectId(doctorId), date);
 	}
@@ -40,7 +40,7 @@ public class DoctorSlotController {
 			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
 			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to, HttpServletRequest request) {
 
-		ObjectId clinicId = new ObjectId((String) request.getAttribute("CLINIC_ID"));
+		ObjectId clinicId = SecurityUtils.getCurrentClinicId();
 
 		return slotGenerationService.generateCalendar(clinicId, new ObjectId(doctorId), from, to);
 	}

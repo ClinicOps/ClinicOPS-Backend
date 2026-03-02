@@ -24,7 +24,7 @@ public class AuditLog {
     private ObjectId id;
 
     private ObjectId userId;
-    private String clinicId;
+    private ObjectId clinicId;
 
     private String domain;
     private String resource;

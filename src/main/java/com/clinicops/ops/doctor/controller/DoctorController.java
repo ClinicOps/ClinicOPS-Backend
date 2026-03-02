@@ -70,7 +70,7 @@ public class DoctorController {
 			@Valid @RequestBody CreateDoctorRequest request, HttpServletRequest httpRequest)
 			throws AuthorizationException {
 
-		ObjectId clinicId = new ObjectId((String) httpRequest.getAttribute("CLINIC_ID"));
+		ObjectId clinicId = SecurityUtils.getCurrentClinicId();
 		CreateDoctorCommand command = new CreateDoctorCommand(clinicId, request);
 
 		commandGateway.execute(command, httpRequest, createDoctorHandler);
@@ -83,7 +83,7 @@ public class DoctorController {
 			@Valid @RequestBody UpdateDoctorRequest request, HttpServletRequest httpRequest)
 			throws AuthorizationException {
 
-		ObjectId clinicId = new ObjectId((String) httpRequest.getAttribute("CLINIC_ID"));
+		ObjectId clinicId = SecurityUtils.getCurrentClinicId();
 		UpdateDoctorCommand command = new UpdateDoctorCommand(clinicId, new ObjectId(id), request);
 
 		commandGateway.execute(command, httpRequest, updateDoctorHandler);
@@ -96,7 +96,7 @@ public class DoctorController {
 			@Valid @RequestBody ChangeDoctorStatusRequest request, HttpServletRequest httpRequest)
 			throws AuthorizationException {
 
-		ObjectId clinicId = new ObjectId((String) httpRequest.getAttribute("CLINIC_ID"));
+		ObjectId clinicId = SecurityUtils.getCurrentClinicId();
 		ChangeDoctorStatusCommand command = new ChangeDoctorStatusCommand(clinicId, new ObjectId(id), request);
 
 		commandGateway.execute(command, httpRequest, changeDoctorStatusHandler);
@@ -108,7 +108,7 @@ public class DoctorController {
 	public ApiResponse<Void> archive(@PathVariable String id,
 			HttpServletRequest httpRequest) throws AuthorizationException {
 
-		ObjectId clinicId = new ObjectId((String) httpRequest.getAttribute("CLINIC_ID"));
+		ObjectId clinicId = SecurityUtils.getCurrentClinicId();
 		ArchiveDoctorCommand command = new ArchiveDoctorCommand(clinicId, new ObjectId(id));
 
 		commandGateway.execute(command, httpRequest, archiveDoctorHandler);
@@ -121,7 +121,7 @@ public class DoctorController {
 	public ApiResponse<DoctorResponse> get(@PathVariable String id,
 			HttpServletRequest request) throws AuthorizationException {
 
-		ObjectId clinicId = new ObjectId((String) request.getAttribute("CLINIC_ID"));
+		ObjectId clinicId = SecurityUtils.getCurrentClinicId();
 		GetDoctorCommand command = new GetDoctorCommand(clinicId, new ObjectId(id));
 
 		commandGateway.execute(command, request, getDoctorHandler);
@@ -137,7 +137,7 @@ public class DoctorController {
 			@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
 			HttpServletRequest request) throws AuthorizationException {
 
-		ObjectId clinicId = new ObjectId((String) request.getAttribute("CLINIC_ID"));
+		ObjectId clinicId = SecurityUtils.getCurrentClinicId();
 		ListDoctorsCommand command = new ListDoctorsCommand(clinicId, search, specialization, status,
 				available, page, size);
 
@@ -151,7 +151,7 @@ public class DoctorController {
 	public ApiResponse<Void> bulkArchive(@RequestBody List<String> ids,
 			HttpServletRequest request) throws AuthorizationException {
 
-		ObjectId clinicId = new ObjectId((String) request.getAttribute("CLINIC_ID"));
+		ObjectId clinicId = SecurityUtils.getCurrentClinicId();
 		List<ObjectId> objectIds = ids.stream().map(ObjectId::new).toList();
 
 		BulkArchiveDoctorsCommand command = new BulkArchiveDoctorsCommand(clinicId, objectIds);
@@ -163,9 +163,9 @@ public class DoctorController {
 
 	@GetMapping("/export")
 	@PreAuthorize("hasAuthority('OPS_DOCTOR_VIEW')")
-	public void export(HttpServletResponse response, HttpServletRequest request) throws IOException {
+	public void export(HttpServletResponse response) throws IOException {
 
-		ObjectId clinicId = new ObjectId((String) request.getAttribute("CLINIC_ID"));
+		ObjectId clinicId = SecurityUtils.getCurrentClinicId();
 		response.setContentType("text/csv");
 		response.setHeader("Content-Disposition", "attachment; filename=doctors.csv");
 

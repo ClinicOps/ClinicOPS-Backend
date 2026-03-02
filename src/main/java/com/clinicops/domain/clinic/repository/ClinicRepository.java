@@ -14,4 +14,6 @@ public interface ClinicRepository extends MongoRepository<Clinic, ObjectId> {
     boolean existsByCode(String code);
 
 	boolean existsByCodeAndDeletedFalse(String slug);
+
+	Optional<Clinic> findById(ObjectId clinicId);
 }

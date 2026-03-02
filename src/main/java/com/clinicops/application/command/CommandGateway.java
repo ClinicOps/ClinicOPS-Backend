@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.bson.types.ObjectId;
 import org.springframework.stereotype.Component;
 
 import com.clinicops.common.audit.AuditPublisher;
@@ -11,6 +12,7 @@ import com.clinicops.common.audit.AuditRecord;
 import com.clinicops.common.exception.AuthorizationException;
 import com.clinicops.domain.access.service.PermissionEvaluator;
 import com.clinicops.security.AuthenticatedUser;
+import com.clinicops.security.SecurityUtils;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -31,14 +33,11 @@ public class CommandGateway {
             HttpServletRequest request,
             CommandHandler<C> handler) throws AuthorizationException {
 
-        AuthenticatedUser user =
-                (AuthenticatedUser) request.getAttribute("AUTH_USER");
-
-        String clinicId =
-                (String) request.getAttribute("CLINIC_ID");
+        ObjectId userId = SecurityUtils.getCurrentUserId();
+        ObjectId clinicId = SecurityUtils.getCurrentClinicId();
 
         boolean allowed = evaluator.isAllowed(
-                user.getUserId(),
+        		userId,
                 clinicId,
                 command.domain(),
                 command.resource(),
@@ -52,19 +51,19 @@ public class CommandGateway {
         handler.handle(command);
         
      // Publish audit AFTER success
-        publishAudit(user, clinicId, command);
+        publishAudit(userId, clinicId, command);
     }
     
     private void publishAudit(
-            AuthenticatedUser user,
-            String clinicId,
+            ObjectId userId,
+            ObjectId clinicId,
             Command command) {
 
         Map<String, Object> metadata = new HashMap<>();
         metadata.put("commandClass", command.getClass().getSimpleName());
 
         AuditRecord record = AuditRecord.builder()
-                .userId(user.getUserId())
+                .userId(userId)
                 .clinicId(clinicId)
                 .domain(command.domain())
                 .resource(command.resource())

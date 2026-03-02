@@ -4,6 +4,8 @@ import com.clinicops.application.command.CommandHandler;
 import com.clinicops.ops.appointment.service.AppointmentService;
 
 import jakarta.servlet.http.HttpServletRequest;
+
+import org.bson.types.ObjectId;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -24,10 +26,10 @@ public class CreateAppointmentHandler
 
     public void handle(
             CreateAppointmentCommand command,
-            String clinicId) {
+            ObjectId objectId) {
 
     	service.create(
-    	        clinicId,
+    	        objectId,
     	        command.patientId,
     	        command.scheduledAt
     	);

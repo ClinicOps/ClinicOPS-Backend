@@ -32,18 +32,17 @@ public class PermissionEvaluator {
      */
     public boolean isAllowed(
             ObjectId userObjId,
-            String clinicId,
+            ObjectId clinicId,
             String domain,
             String resource,
             String action) {
         
-        ObjectId clinicObjId = new ObjectId(clinicId);
         String permissionKey = domain + ":" + resource + ":" + action;
 
         // Step 1: Try to get cached permissions
         Set<String> cachedPermissions = cacheService.getPermissions(
             userObjId.toString(), 
-            clinicId
+            clinicId.toString()
         );
 
         if (cachedPermissions != null) {
@@ -54,7 +53,7 @@ public class PermissionEvaluator {
         // Step 2: Fetch from database
         Set<String> permissionKeys = new HashSet<>();
         var assignments = assignmentRepo.findByUserIdAndClinicIdAndStatus(
-            userObjId, clinicObjId, "ACTIVE"
+            userObjId, clinicId, "ACTIVE"
         );
 
         for (UserRoleAssignment a : assignments) {
@@ -65,7 +64,7 @@ public class PermissionEvaluator {
             if (role.isOwner()) {
                 log.debug("User {} is OWNER, granting all permissions", userObjId);
                 // Cache all permissions as empty set won't match, so store a marker
-                cacheService.cachePermissions(userObjId.toString(), clinicId, null);
+                cacheService.cachePermissions(userObjId.toString(), clinicId.toString(), null);
                 return true;
             }
 
@@ -75,7 +74,7 @@ public class PermissionEvaluator {
         }
 
         // Step 3: Cache the permissions
-        cacheService.cachePermissions(userObjId.toString(), clinicId, permissionKeys);
+        cacheService.cachePermissions(userObjId.toString(), clinicId.toString(), permissionKeys);
         
         boolean allowed = permissionKeys.contains(permissionKey);
         log.debug("Permission check - User: {} Domain: {} Resource: {} Action: {} Result: {}", 

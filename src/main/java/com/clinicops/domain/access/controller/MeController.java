@@ -75,18 +75,16 @@ public class MeController {
                 ? (AuthenticatedUser) auth.getPrincipal()
                 : null;
         
-        // Get clinic from request attribute (set by ClinicContextFilter)
-        String clinicId = (String) request.getAttribute("CLINIC_ID");
-        
         if (user == null) {
             return new ArrayList<>();
         }
         
-        System.out.println("RBAC check userId=" + user.getUserId()
-        + " clinicId=" + clinicId);
         
         ObjectId userObjId = user.getUserId();
-        ObjectId clinicObjId = new ObjectId(clinicId);
+        ObjectId clinicObjId = user.getClinicId();
+        
+        System.out.println("RBAC check userId=" + userObjId
+        + " clinicId=" + clinicObjId);
 
         // Fetch ACTIVE role assignments
         var assignments =

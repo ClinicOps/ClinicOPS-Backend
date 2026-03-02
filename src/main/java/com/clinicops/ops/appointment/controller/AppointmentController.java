@@ -8,8 +8,11 @@ import com.clinicops.ops.appointment.command.CreateAppointmentCommand;
 import com.clinicops.ops.appointment.command.CreateAppointmentHandler;
 import com.clinicops.ops.appointment.dto.CreateAppointmentRequest;
 import com.clinicops.ops.appointment.service.AppointmentService;
+import com.clinicops.security.SecurityUtils;
 
 import jakarta.servlet.http.HttpServletRequest;
+
+import org.bson.types.ObjectId;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
@@ -48,8 +51,7 @@ public class AppointmentController {
     		        );
 
     		    gateway.execute(cmd, request, c ->
-    		        createHandler.handle(cmd,
-    		            (String) request.getAttribute("CLINIC_ID")));
+    		        createHandler.handle(cmd, SecurityUtils.getCurrentClinicId()));
     		}
 
     @DeleteMapping("/{id}")
@@ -61,14 +63,12 @@ public class AppointmentController {
                 new CancelAppointmentCommand(id);
 
         gateway.execute(cmd, request, c ->
-                cancelHandler.handle(cmd,
-                        (String) request.getAttribute("CLINIC_ID")));
-    }
+                cancelHandler.handle(cmd, SecurityUtils.getCurrentClinicId()));
+    } 
 
     @GetMapping
     public Object list(HttpServletRequest request) {
-        String clinicId =
-                (String) request.getAttribute("CLINIC_ID");
+        ObjectId clinicId = SecurityUtils.getCurrentClinicId();
 
         return queryService.list(clinicId);
     }

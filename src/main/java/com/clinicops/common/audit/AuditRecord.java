@@ -17,7 +17,7 @@ import org.bson.types.ObjectId;
 public class AuditRecord {
 
     private ObjectId userId;
-    private String clinicId;
+    private ObjectId clinicId;
 
     private String domain;
     private String resource;
